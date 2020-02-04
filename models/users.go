@@ -18,4 +18,5 @@ type User struct {
 	CreatedAt    time.Time `json:"uploadtime"`
 	UUID         string    `json:"uuid"`
 	UserLocation Location  `json:"location"`
+	Friends      []Friends `json:"friends"`
 }
