@@ -11,20 +11,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/ucladevx/BConnect-backend/server/actions"
 	fire "github.com/ucladevx/BConnect-backend/storage/firebase"
-	"google.golang.org/api/option"
 )
 
 // Setup inits server for setup
-func Setup(ctx context.Context, service []byte) {
-	config := &firebase.Config{
-		DatabaseURL: "https://connect-b.firebaseio.com/",
-	}
-
-	opt := option.WithCredentialsJSON(service)
-	fb, err := firebase.NewApp(context.Background(), config, opt)
-	if err != nil {
-
-	}
+func Setup(ctx context.Context, fb *firebase.App) {
 	client, err := fb.Database(ctx)
 	if err != nil {
 

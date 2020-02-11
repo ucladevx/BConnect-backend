@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"os"
 
+	firebase "firebase.google.com/go"
 	"github.com/ucladevx/BConnect-backend/controllers"
+	"google.golang.org/api/option"
 )
 
 func main() {
@@ -31,5 +33,14 @@ func main() {
 		fmt.Println("error:", err)
 	}
 
-	controllers.Setup(context.Background(), []byte(``))
+	config := &firebase.Config{
+		DatabaseURL: "https://connect-b.firebaseio.com/",
+	}
+
+	opt := option.WithCredentialsFile("./credentials/connect_b-sdk.json")
+	fb, err := firebase.NewApp(context.Background(), config, opt)
+	if err != nil {
+		print(err.Error())
+	}
+	controllers.Setup(context.Background(), fb)
 }
