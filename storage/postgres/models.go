@@ -11,31 +11,28 @@ type Location int
 // User user struct
 type User struct {
 	gorm.Model
-	FirstName    string    `json:"firstname"`
-	LastName     string    `json:"lastname"`
-	Email        string    `json:"email"`
-	Password     string    `json:"password"`
-	PhoneNumber  string    `json:"phonenumber"`
-	ProfilePic   string    `json:"profilepic"`
-	UUID         string    `json:"uuid"`
-	UserLocation Location  `json:"location"`
-	Friends      []Friends `json:"friends"`
+	FirstName    string   `json:"firstname"`
+	LastName     string   `json:"lastname"`
+	Email        string   `json:"email"`
+	Password     string   `json:"password"`
+	PhoneNumber  string   `json:"phonenumber"`
+	ProfilePic   string   `json:"profilepic"`
+	UUID         string   `json:"uuid"`
+	UserLocation Location `json:"location"`
 }
 
 // Friends structure of friend
 type Friends struct {
 	gorm.Model
-	FirstName    string   `json:"firstname"`
-	LastName     string   `json:"lastname"`
-	UserLocation Location `json:"location"`
-	UUID         string   `json:"uuid"`
+	UUID  string `json:"uuid"`
+	FUUID string `json:"fuuid"`
 }
 
 // Token tokens
 type Token struct {
 	jwt.Claims
-	UserID         string
-	Name           string
+	UUID           string
+	FirstName      string
 	Email          string
 	StandardClaims *jwt.StandardClaims
 }

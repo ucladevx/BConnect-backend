@@ -3,21 +3,32 @@ package userauth
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"github.com/ucladevx/BConnect-backend/models"
 )
 
 // AuthService abstract server-side authentication in case we switch from whatever current auth scheme we are using
 type AuthService interface {
-	GET(username string, password string) (map[string]interface{}, bool)
+	GET(username string, password string) (map[string]interface{}, string, time.Time)
 	SET(username string, password string) (bool, error)
-	PUT(username string, password string) (bool, error)
+	PUT(email string, password string, firstName string, lastName string) (bool, error)
 	DEL(username string, password string) (bool, error)
+}
+
+// UserService abstract user-side functionality in case we switch from whatever current db scheme we are using
+type UserService interface {
+	ADD(currUUID string, friendUUID string, optionalMsg string) (*models.FriendRequest, error)
+	ACCEPT(currUUID string, friendUUID string) (*models.FriendRequest, error)
 }
 
 // UserController abstract server-side authentication
 type UserController struct {
 	Service AuthService
+	Actions UserService
 }
 
 // Body credentials necessary for username/password auth
@@ -47,27 +58,36 @@ func (auth *UserController) Setup(r *mux.Router) {
 // AuthSetup sets up auth handlers
 func (auth *UserController) AuthSetup(r *mux.Router) {
 	r.HandleFunc("/delete", auth.Delete).Methods("GET", "OPTIONS")
+	r.HandleFunc("/addfriend", auth.AddFriend).Methods("GET")
+	r.HandleFunc("/acceptfriend", auth.AcceptFriend).Methods("GET")
 }
 
 // Login login users and provides auth token
 func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	var userInfo Body
-	userInfo.UUID = r.URL.Query().Get("uuid")
+	userInfo.UUID = r.URL.Query().Get("email")
 	userInfo.Password = r.URL.Query().Get("password")
 
-	resp, success := auth.Service.GET(userInfo.UUID, userInfo.Password)
-	if success {
+	resp, token, expirationTime := auth.Service.GET(userInfo.UUID, userInfo.Password)
+	if token != "" {
+		http.SetCookie(w, &http.Cookie{
+			Name:    "token",
+			Value:   token,
+			Expires: expirationTime,
+		})
 		json.NewEncoder(w).Encode(resp)
 	}
 }
 
 // Signup signs up users and provides auth token
 func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
-	var userInfo Body
-	userInfo.UUID = r.URL.Query().Get("uuid")
+	var userInfo models.User
+	userInfo.Email = r.URL.Query().Get("email")
 	userInfo.Password = r.URL.Query().Get("password")
+	userInfo.FirstName = r.URL.Query().Get("firstname")
+	userInfo.LastName = r.URL.Query().Get("lastname")
 
-	auth.Service.PUT(userInfo.UUID, userInfo.Password)
+	auth.Service.PUT(userInfo.Email, userInfo.Password, userInfo.FirstName, userInfo.LastName)
 
 }
 
@@ -82,6 +102,52 @@ func (auth *UserController) Set(w http.ResponseWriter, r *http.Request) {
 	}
 
 	auth.Service.SET(userInfo.UUID, userInfo.Password)
+}
+
+// AddFriend generates friendRequest to specified UUID
+func (auth *UserController) AddFriend(w http.ResponseWriter, r *http.Request) {
+	header := strings.TrimSpace(r.Header.Get("x-access-token"))
+
+	type Claims struct {
+		jwt.MapClaims
+		UUID           string
+		FirstName      string
+		Email          string
+		StandardClaims *jwt.StandardClaims
+	}
+	claims := Claims{}
+
+	header = strings.Replace(header, "Bearer ", "", -1)
+	_, err := jwt.ParseWithClaims(header, &claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+	if err != nil {
+
+	}
+	auth.Actions.ADD(claims.UUID, r.URL.Query().Get("friend_uuid"), r.URL.Query().Get("message"))
+}
+
+// AcceptFriend accepts friendRequest from specified UUID
+func (auth *UserController) AcceptFriend(w http.ResponseWriter, r *http.Request) {
+	header := strings.TrimSpace(r.Header.Get("x-access-token"))
+
+	type Claims struct {
+		jwt.MapClaims
+		UUID           string
+		FirstName      string
+		Email          string
+		StandardClaims *jwt.StandardClaims
+	}
+	claims := Claims{}
+
+	header = strings.Replace(header, "Bearer ", "", -1)
+	_, err := jwt.ParseWithClaims(header, &claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+	if err != nil {
+
+	}
+	auth.Actions.ACCEPT(claims.UUID, r.URL.Query().Get("friend_uuid"))
 }
 
 // Delete deletes users and removes them from DB

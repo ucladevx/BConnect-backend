@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/ucladevx/BConnect-backend/storage/postgres"
 )
 
 type key int
@@ -19,27 +18,32 @@ const (
 func VerifyToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		var header = r.Header.Get("x-access-token") //Grab the token from the header
-
-		header = strings.TrimSpace(header)
+		header := strings.TrimSpace(r.Header.Get("x-access-token"))
 
 		if header == "" {
-			//Token is missing, returns with error code 403 Unauthorized
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
-		tk := &postgres.Token{}
+		type Claims struct {
+			jwt.MapClaims
+			UUID           string
+			FirstName      string
+			Email          string
+			StandardClaims *jwt.StandardClaims
+		}
+		claims := Claims{}
 
-		_, err := jwt.ParseWithClaims(header, tk, func(token *jwt.Token) (interface{}, error) {
+		header = strings.Replace(header, "Bearer ", "", -1)
+		_, err := jwt.ParseWithClaims(header, &claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte("secret"), nil
 		})
 
 		if err != nil {
+			print(err.Error())
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
-
-		ctx := context.WithValue(r.Context(), keyPrincipalID, tk)
+		ctx := context.WithValue(r.Context(), keyPrincipalID, claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

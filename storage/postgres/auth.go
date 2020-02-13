@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ucladevx/BConnect-backend/utils/uuid"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -26,35 +28,33 @@ func (client *Client) create() {
 }
 
 // GET gets user for login
-func (client *Client) GET(key string, password string) (map[string]interface{}, bool) {
-	resp := client.findOne(key, password)
-	return resp, true
+func (client *Client) GET(key string, password string) (map[string]interface{}, string, time.Time) {
+	resp, token, expirationTime := client.findOne(key, password)
+	return resp, token, expirationTime
 }
 
-func (client *Client) findOne(email, password string) map[string]interface{} {
+func (client *Client) findOne(email, password string) (map[string]interface{}, string, time.Time) {
 	user := &User{}
 
 	if err := client.client.Where("Email = ?", email).First(user).Error; err != nil {
 		var resp = map[string]interface{}{"status": false, "message": "Email address not found"}
-		return resp
+		return resp, "", time.Time{}
 	}
 
-	print(password)
-
-	expiresAt := time.Now().Add(time.Minute * 100000).Unix()
+	expiresAt := time.Now().Add(time.Minute * 100000)
 
 	errf := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
 		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials. Please try again"}
-		return resp
+		return resp, "", time.Time{}
 	}
 
 	tk := &Token{
-		UserID: user.UUID,
-		Name:   user.FirstName,
-		Email:  user.Email,
+		UUID:      user.UUID,
+		FirstName: user.FirstName,
+		Email:     user.Email,
 		StandardClaims: &jwt.StandardClaims{
-			ExpiresAt: expiresAt,
+			ExpiresAt: expiresAt.Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
@@ -65,20 +65,24 @@ func (client *Client) findOne(email, password string) map[string]interface{} {
 	}
 
 	var resp = map[string]interface{}{"status": false, "message": "logged in"}
-	resp["token"] = tokenString //Store the token in the response
+	resp["token"] = tokenString
 	resp["user"] = user
-	return resp
+
+	return resp, tokenString, expiresAt
 }
 
 // PUT puts user into postgres
-func (client *Client) PUT(key string, password string) (bool, error) {
+func (client *Client) PUT(email string, password string, firstname string, lastname string) (bool, error) {
 	pass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
 	}
 	user := &User{}
 	user.Password = string(pass)
-	user.Email = key
+	user.Email = email
+	user.FirstName = firstname
+	user.LastName = lastname
+	user.UUID = uuid.UUID()
 	client.client.Create(user)
 	return true, nil
 }

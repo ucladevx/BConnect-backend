@@ -18,6 +18,7 @@ type Config struct {
 		Username string `yaml:"USERNAME"`
 		Name     string `yaml:"NAME"`
 		Password string `yaml:"PASSWORD"`
+		Friends  string `yaml:"FRIEND"`
 	} `yaml:"STORAGE"`
 }
 

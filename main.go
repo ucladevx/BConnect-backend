@@ -18,11 +18,19 @@ func startServerAndServices(config Config) {
 		config.Storage.Name,
 		config.Storage.Password)
 
+	friendDB := postgres.Connect(config.Storage.Host,
+		config.Storage.Username,
+		config.Storage.Friends,
+		config.Storage.Password)
+
 	app := postgres.NewPostgresClient(db)
-	postgres.CreatePostgresTables(app)
+	userActions := postgres.NewUserActions(db, friendDB)
+
+	postgres.CreatePostgresTables(app, userActions)
 
 	var userController = userauth.UserController{
 		Service: app,
+		Actions: userActions,
 	}
 
 	r := mux.NewRouter()
@@ -30,7 +38,7 @@ func startServerAndServices(config Config) {
 	userController.Setup(r)
 	s := r.PathPrefix("/auth").Subrouter()
 	s.Use(bconnecthandlers.VerifyToken)
-	userController.Setup(s)
+	userController.AuthSetup(s)
 
 	log.Printf("Listening on %s%s", config.Server.Host, config.Server.Port)
 
