@@ -45,10 +45,10 @@ func (user *UserActions) ACCEPT(currUUID string, friendUUID string) (*models.Fri
 	var friendRequest models.FriendRequest
 	friendRequest.Sender = friendUUID
 
-	fReq := &Friends{}
-	fReq.UUID = currUUID
-	fReq.UUID = friendUUID
-	user.friend.Create(fReq)
+	fRequest := &Friends{}
+	fRequest.UUID = currUUID
+	fRequest.UUID = friendUUID
+	user.friend.Create(fRequest)
 
 	return &friendRequest, nil
 }
