@@ -21,7 +21,7 @@ func (locationTree *UserLocations) Save() *UserLocations {
 	return locationTree
 }
 
-//Rebuild rebuilds the R-tree and saves to some form of persistent storage
+//Rebuild rebuilds the R-tree and saves to some form of persistent storage if there exists some inconsistencies
 func (locationTree *UserLocations) Rebuild() *UserLocations {
 	return locationTree
 }
@@ -34,4 +34,12 @@ func (locationTree *UserLocations) AddLocation() *UserLocations {
 //DeleteLocation deletes from the the R-tree and saves deletion in some form of persistent storage
 func (locationTree *UserLocations) DeleteLocation() *UserLocations {
 	return locationTree
+}
+
+func (locationTree *UserLocations) GetNNearestNeighbors() {
+
+}
+
+func conversion(addressLiteral string) {
+	// TODO: Implement conversion from actual address to lat/long (potentially) for standard location storage
 }

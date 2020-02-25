@@ -11,18 +11,29 @@ import (
 	"github.com/ucladevx/BConnect-backend/models"
 )
 
+// Claims used to determine auth token passed in header
+type Claims struct {
+	jwt.MapClaims
+	UUID           string
+	FirstName      string
+	Email          string
+	StandardClaims *jwt.StandardClaims
+}
+
 // AuthService abstract server-side authentication in case we switch from whatever current auth scheme we are using
 type AuthService interface {
 	GET(username string, password string) (map[string]interface{}, string, time.Time)
 	SET(username string, password string) (bool, error)
 	PUT(email string, password string, firstName string, lastName string) (bool, error)
 	DEL(username string, password string) (bool, error)
+	REFRESH()
 }
 
 // UserService abstract user-side functionality in case we switch from whatever current db scheme we are using
 type UserService interface {
 	ADD(currUUID string, friendUUID string, optionalMsg string) (*models.FriendRequest, error)
 	ACCEPT(currUUID string, friendUUID string) (*models.FriendRequest, error)
+	GET(currUUID string) map[string]interface{}
 }
 
 // UserController abstract server-side authentication
@@ -51,18 +62,20 @@ type CurrUser struct {
 
 // Setup sets up handlers
 func (auth *UserController) Setup(r *mux.Router) {
-	r.HandleFunc("/login", auth.Login).Methods("POST", "GET", "OPTIONS")
-	r.HandleFunc("/signup", auth.Signup).Methods("GET", "OPTIONS")
+	r.HandleFunc("/login", auth.Login).Methods("GET")
+	r.HandleFunc("/signup", auth.Signup).Methods("GET")
 }
 
 // AuthSetup sets up auth handlers
 func (auth *UserController) AuthSetup(r *mux.Router) {
-	r.HandleFunc("/delete", auth.Delete).Methods("GET", "OPTIONS")
+	r.HandleFunc("/delete", auth.Delete).Methods("GET")
 	r.HandleFunc("/addfriend", auth.AddFriend).Methods("GET")
 	r.HandleFunc("/acceptfriend", auth.AcceptFriend).Methods("GET")
+	r.HandleFunc("/getfriends", auth.GetFriend).Methods("GET")
+	r.HandleFunc("/refresh", auth.Refresh).Methods("GET")
 }
 
-// Login login users and provides auth token
+// Login login users and provides authentication token for user
 func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	var userInfo Body
 	userInfo.UUID = r.URL.Query().Get("email")
@@ -106,48 +119,22 @@ func (auth *UserController) Set(w http.ResponseWriter, r *http.Request) {
 
 // AddFriend generates friendRequest to specified UUID
 func (auth *UserController) AddFriend(w http.ResponseWriter, r *http.Request) {
-	header := strings.TrimSpace(r.Header.Get("x-access-token"))
-
-	type Claims struct {
-		jwt.MapClaims
-		UUID           string
-		FirstName      string
-		Email          string
-		StandardClaims *jwt.StandardClaims
-	}
-	claims := Claims{}
-
-	header = strings.Replace(header, "Bearer ", "", -1)
-	_, err := jwt.ParseWithClaims(header, &claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("secret"), nil
-	})
-	if err != nil {
-
-	}
+	claims := auth.getCurrentUserFromTokenProvided(w, r)
 	auth.Actions.ADD(claims.UUID, r.URL.Query().Get("friend_uuid"), r.URL.Query().Get("message"))
 }
 
 // AcceptFriend accepts friendRequest from specified UUID
 func (auth *UserController) AcceptFriend(w http.ResponseWriter, r *http.Request) {
-	header := strings.TrimSpace(r.Header.Get("x-access-token"))
-
-	type Claims struct {
-		jwt.MapClaims
-		UUID           string
-		FirstName      string
-		Email          string
-		StandardClaims *jwt.StandardClaims
-	}
-	claims := Claims{}
-
-	header = strings.Replace(header, "Bearer ", "", -1)
-	_, err := jwt.ParseWithClaims(header, &claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("secret"), nil
-	})
-	if err != nil {
-
-	}
+	claims := auth.getCurrentUserFromTokenProvided(w, r)
 	auth.Actions.ACCEPT(claims.UUID, r.URL.Query().Get("friend_uuid"))
+}
+
+// GetFriend gets a list of user friends
+func (auth *UserController) GetFriend(w http.ResponseWriter, r *http.Request) {
+	claims := auth.getCurrentUserFromTokenProvided(w, r)
+
+	resp := auth.Actions.GET(claims.UUID)
+	json.NewEncoder(w).Encode(resp)
 }
 
 // Delete deletes users and removes them from DB
@@ -158,4 +145,24 @@ func (auth *UserController) Delete(w http.ResponseWriter, r *http.Request) {
 	decoder.Decode(&userInfo)
 
 	auth.Service.DEL(userInfo.UUID, userInfo.Password)
+}
+
+// Refresh generates a new authentication token for the current user and sends it
+func (auth *UserController) Refresh(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (auth *UserController) getCurrentUserFromTokenProvided(w http.ResponseWriter, r *http.Request) Claims {
+	header := strings.TrimSpace(r.Header.Get("x-access-token"))
+
+	claims := Claims{}
+
+	header = strings.Replace(header, "Bearer ", "", -1)
+	_, err := jwt.ParseWithClaims(header, &claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	return claims
 }
