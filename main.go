@@ -23,13 +23,13 @@ func startServerAndServices(config Config) {
 		config.Storage.Friends,
 		config.Storage.Password)
 
-	app := postgres.NewPostgresClient(db)
+	auth := postgres.NewPostgresClient(db)
 	userActions := postgres.NewUserActions(db, friendDB)
 
-	postgres.CreatePostgresTables(app, userActions)
+	postgres.CreatePostgresTables(auth, userActions)
 
 	var userController = userauth.UserController{
-		Service: app,
+		Service: auth,
 		Actions: userActions,
 	}
 

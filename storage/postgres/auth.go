@@ -46,8 +46,8 @@ func (client *Client) findOne(email, password string) (map[string]interface{}, s
 	expiresAt := time.Now().Add(time.Minute * 100000)
 
 	errf := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
-		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials. Please try again"}
+	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials"}
 		return resp, "", time.Time{}
 	}
 

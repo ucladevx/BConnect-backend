@@ -93,3 +93,8 @@ func (user *UserActions) GET(currUUID string) map[string]interface{} {
 	var resp = map[string]interface{}{"num_friends": len(friends), "friends": fuuids}
 	return resp
 }
+
+// LEAVE logs users out
+func (user *UserActions) LEAVE(currUUID string) {
+
+}

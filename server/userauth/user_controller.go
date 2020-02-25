@@ -34,6 +34,7 @@ type UserService interface {
 	ADD(currUUID string, friendUUID string, optionalMsg string) (*models.FriendRequest, error)
 	ACCEPT(currUUID string, friendUUID string) (*models.FriendRequest, error)
 	GET(currUUID string) map[string]interface{}
+	LEAVE(currUUID string)
 }
 
 // UserController abstract server-side authentication
@@ -145,6 +146,12 @@ func (auth *UserController) Delete(w http.ResponseWriter, r *http.Request) {
 	decoder.Decode(&userInfo)
 
 	auth.Service.DEL(userInfo.UUID, userInfo.Password)
+}
+
+// Logout logs out users
+func (auth *UserController) Logout(w http.ResponseWriter, r *http.Request) {
+	claims := auth.getCurrentUserFromTokenProvided(w, r)
+	auth.Actions.LEAVE(claims.UUID)
 }
 
 // Refresh generates a new authentication token for the current user and sends it
