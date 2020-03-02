@@ -1,1 +1,1 @@
-web: bin/bconnect
+web: bin/BConnect-backend
