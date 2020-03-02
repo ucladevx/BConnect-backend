@@ -1,5 +1,7 @@
 package firebase
 
+/* USING POSTGRES NOW -- firebase features not included for now */
+
 import (
 	"context"
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ucladevx/BConnect-backend/models"
 	"github.com/ucladevx/BConnect-backend/utils/uuid"
 
 	"github.com/dgrijalva/jwt-go"
@@ -24,7 +25,8 @@ func NewPostgresClient(client *gorm.DB) *Client {
 }
 
 func (client *Client) create() {
-	client.client.AutoMigrate(&User{})
+	/* TODO: Maybe change migration model to maybe define DB relationships */
+	client.client.AutoMigrate(&models.User{})
 }
 
 // GET gets user for login
@@ -34,7 +36,7 @@ func (client *Client) GET(key string, password string) (map[string]interface{}, 
 }
 
 func (client *Client) findOne(email, password string) (map[string]interface{}, string, time.Time) {
-	user := &User{}
+	user := &models.User{}
 
 	if err := client.client.Where("Email = ?", email).First(user).Error; err != nil {
 		var resp = map[string]interface{}{"status": false, "message": "Email address not found"}
@@ -44,12 +46,12 @@ func (client *Client) findOne(email, password string) (map[string]interface{}, s
 	expiresAt := time.Now().Add(time.Minute * 100000)
 
 	errf := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
-		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials. Please try again"}
+	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials"}
 		return resp, "", time.Time{}
 	}
 
-	tk := &Token{
+	tk := &models.Token{
 		UUID:      user.UUID,
 		FirstName: user.FirstName,
 		Email:     user.Email,
@@ -77,7 +79,7 @@ func (client *Client) PUT(email string, password string, firstname string, lastn
 	if err != nil {
 		fmt.Println(err)
 	}
-	user := &User{}
+	user := &models.User{}
 	user.Password = string(pass)
 	user.Email = email
 	user.FirstName = firstname
@@ -95,4 +97,9 @@ func (client *Client) SET(key string, password string) (bool, error) {
 // DEL dels clients
 func (client *Client) DEL(key string, password string) (bool, error) {
 	return true, nil
+}
+
+//REFRESH generates a new refresh token for the authenticated client
+func (client *Client) REFRESH() {
+
 }
