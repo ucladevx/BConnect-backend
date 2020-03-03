@@ -52,12 +52,13 @@ func startServerAndServices(config Config) {
 	s.Use(bconnecthandlers.VerifyToken)
 	userController.AuthSetup(s)
 
-	log.Printf("Listening on %s%s", config.Server.Host, config.Server.Port)
-
 	port, ok := os.LookupEnv("PORT")
 	if !ok {
 		port = "8080"
 	}
+
+	log.Printf("Listening on %s:%s", config.Server.Host, port)
+
 	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 }
 
