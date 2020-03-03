@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/ucladevx/BConnect-backend/bconnecthandlers"
 	"github.com/ucladevx/BConnect-backend/server/userauth"
@@ -42,7 +43,7 @@ func startServerAndServices(config Config) {
 
 	log.Printf("Listening on %s%s", config.Server.Host, config.Server.Port)
 
-	log.Fatal(http.ListenAndServe(config.Server.Port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
+	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 }
 
 func main() {
