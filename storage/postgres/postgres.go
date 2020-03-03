@@ -42,5 +42,5 @@ func Connect(databaseHost string, username string, databaseName string, password
 }
 
 func dbURI(databaseHost string, username string, databaseName string, password string) string {
-	return fmt.Sprintf("host=%s user=%s dbname=%s sslmode=require password=%s", databaseHost, username, databaseName, password)
+	return fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", databaseHost, username, databaseName, password)
 }
