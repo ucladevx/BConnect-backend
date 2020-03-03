@@ -13,15 +13,15 @@ import (
 )
 
 func startServerAndServices(config Config) {
-	db := postgres.Connect(config.Storage.Host,
+	db := postgres.Connect(config.Storage.UserHost,
+		config.Storage.UserUsername,
 		config.Storage.Username,
-		config.Storage.Name,
-		config.Storage.Password)
+		config.Storage.UserPassword)
 
-	friendDB := postgres.Connect(config.Storage.Host,
-		config.Storage.Username,
-		config.Storage.Friends,
-		config.Storage.Password)
+	friendDB := postgres.Connect(config.Storage.FriendHost,
+		config.Storage.FriendUsername,
+		config.Storage.Friendname,
+		config.Storage.FriendPassword)
 
 	auth := postgres.NewPostgresClient(db)
 	userActions := postgres.NewUserActions(db, friendDB)

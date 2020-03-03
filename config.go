@@ -13,12 +13,17 @@ type Config struct {
 		Host string `yaml:"HOST"`
 	} `yaml:"SERVER"`
 	Storage struct {
-		Port     string `yaml:"PORT"`
-		Host     string `yaml:"HOST"`
-		Username string `yaml:"USERNAME"`
-		Name     string `yaml:"NAME"`
-		Password string `yaml:"PASSWORD"`
-		Friends  string `yaml:"FRIEND"`
+		Port           string `yaml:"PORT"`
+		UserHost       string `yaml:"USERHOST"`
+		FriendHost     string `yaml:"FRIENDHOST"`
+		Friendname     string `yaml:"FRIENDNAME"`
+		Username       string `yaml:"USERNAME"`
+		UserUsername   string `yaml:"USERUSERNAME"`
+		UserPassword   string `yaml:"USERPASSWORD"`
+		FriendUsername string `yaml:"FRIENDUSERNAME"`
+		FriendPassword string `yaml:"FRIENDPASSWORD"`
+		HerokuUser     string `yaml:"HEROKUUSER"`
+		HerokuFriend   string `yaml:"HEROKUFRIEND"`
 	} `yaml:"STORAGE"`
 }
 
