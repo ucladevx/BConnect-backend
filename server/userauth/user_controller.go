@@ -63,7 +63,7 @@ type CurrUser struct {
 
 // Setup sets up handlers
 func (auth *UserController) Setup(r *mux.Router) {
-	r.HandleFunc("/login", auth.Login).Methods("GET")
+	r.HandleFunc("/login", auth.Login).Methods("POST")
 	r.HandleFunc("/signup", auth.Signup).Methods("GET")
 }
 
@@ -78,11 +78,15 @@ func (auth *UserController) AuthSetup(r *mux.Router) {
 
 // Login login users and provides authentication token for user
 func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
-	var userInfo Body
-	userInfo.UUID = r.URL.Query().Get("email")
-	userInfo.Password = r.URL.Query().Get("password")
+	decoder := json.NewDecoder(r.Body)
 
-	resp, token, expirationTime := auth.Service.GET(userInfo.UUID, userInfo.Password)
+	var userInfo Auth
+	err := decoder.Decode(&userInfo)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, token, expirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
 	if token != "" {
 		http.SetCookie(w, &http.Cookie{
 			Name:    "token",
