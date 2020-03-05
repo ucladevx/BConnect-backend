@@ -1,4 +1,4 @@
-package userauth
+package usercontroller
 
 import (
 	"encoding/json"
@@ -22,8 +22,8 @@ type Claims struct {
 
 // AuthService abstract server-side authentication in case we switch from whatever current auth scheme we are using
 type AuthService interface {
-	GET(username string, password string) (map[string]interface{}, string, time.Time)
-	SET(username string, password string) (bool, error)
+	GET(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time)
+	SET(email string, password string, firstName string, lastName string) (bool, error)
 	PUT(email string, password string, firstName string, lastName string) (bool, error)
 	DEL(username string, password string) (bool, error)
 	REFRESH()
@@ -55,6 +55,14 @@ type Auth struct {
 	Password string `json:"Password"`
 }
 
+// NewUser creds necessary to create new user
+type NewUser struct {
+	Username string `json:"Username"`
+	Password string `json:"Password"`
+	FName    string `json:"FName"`
+	LName    string `json:"LName"`
+}
+
 // CurrUser refers to current user and corresponding JWT token
 type CurrUser struct {
 	Username string `json:"Username"`
@@ -64,11 +72,12 @@ type CurrUser struct {
 // Setup sets up handlers
 func (auth *UserController) Setup(r *mux.Router) {
 	r.HandleFunc("/login", auth.Login).Methods("POST")
-	r.HandleFunc("/signup", auth.Signup).Methods("GET")
+	r.HandleFunc("/signup", auth.Signup).Methods("POST")
 }
 
 // AuthSetup sets up auth handlers
 func (auth *UserController) AuthSetup(r *mux.Router) {
+	r.HandleFunc("/change", auth.Set).Methods("POST")
 	r.HandleFunc("/delete", auth.Delete).Methods("GET")
 	r.HandleFunc("/addfriend", auth.AddFriend).Methods("GET")
 	r.HandleFunc("/acceptfriend", auth.AcceptFriend).Methods("GET")
@@ -81,12 +90,17 @@ func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	var userInfo Auth
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&userInfo)
-	resp, token, expirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
+	resp, token, refreshToken, expirationTime, refreshExpirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
 	if token != "" {
 		http.SetCookie(w, &http.Cookie{
 			Name:    "token",
 			Value:   token,
 			Expires: expirationTime,
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:    "token",
+			Value:   refreshToken,
+			Expires: refreshExpirationTime,
 		})
 		json.NewEncoder(w).Encode(resp)
 	}
@@ -94,19 +108,30 @@ func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
 
 // Signup signs up users and provides auth token
 func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
-	var userInfo models.User
-	userInfo.Email = r.URL.Query().Get("email")
-	userInfo.Password = r.URL.Query().Get("password")
-	userInfo.FirstName = r.URL.Query().Get("firstname")
-	userInfo.LastName = r.URL.Query().Get("lastname")
+	var userInfo NewUser
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&userInfo)
 
-	auth.Service.PUT(userInfo.Email, userInfo.Password, userInfo.FirstName, userInfo.LastName)
-
+	auth.Service.PUT(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
+	resp, token, refreshToken, expirationTime, refreshExpirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
+	if token != "" {
+		http.SetCookie(w, &http.Cookie{
+			Name:    "token",
+			Value:   token,
+			Expires: expirationTime,
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:    "token",
+			Value:   refreshToken,
+			Expires: refreshExpirationTime,
+		})
+		json.NewEncoder(w).Encode(resp)
+	}
 }
 
 // Set changes users in DB
 func (auth *UserController) Set(w http.ResponseWriter, r *http.Request) {
-	var userInfo Body
+	var userInfo NewUser
 
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&userInfo)
@@ -114,7 +139,7 @@ func (auth *UserController) Set(w http.ResponseWriter, r *http.Request) {
 		print(err.Error)
 	}
 
-	auth.Service.SET(userInfo.UUID, userInfo.Password)
+	auth.Service.SET(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
 }
 
 // AddFriend generates friendRequest to specified UUID

@@ -50,6 +50,14 @@ type Token struct {
 	StandardClaims *jwt.StandardClaims
 }
 
+// RefreshToken refresh tokens
+type RefreshToken struct {
+	jwt.Claims
+	UUID           string
+	ID             string
+	StandardClaims *jwt.StandardClaims
+}
+
 // Chats chats
 type Chats struct {
 }

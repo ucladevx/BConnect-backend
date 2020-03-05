@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
-	"github.com/ucladevx/BConnect-backend/bconnecthandlers"
-	"github.com/ucladevx/BConnect-backend/server/userauth"
+	"github.com/ucladevx/BConnect-backend/middleware/bconnecthandlers"
+	"github.com/ucladevx/BConnect-backend/server/usercontroller"
 	"github.com/ucladevx/BConnect-backend/storage/postgres"
 
 	"github.com/gorilla/handlers"
@@ -40,7 +40,7 @@ func startServerAndServices(config Config) {
 
 	postgres.CreatePostgresTables(auth, userActions)
 
-	var userController = userauth.UserController{
+	var userController = usercontroller.UserController{
 		Service: auth,
 		Actions: userActions,
 	}
