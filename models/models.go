@@ -30,6 +30,7 @@ type User struct {
 	GradYear     string   `json:"year"`
 	UserLocation Location `json:"locObj"`
 	Interests    string   `json:"interests"`
+	Clubs        string   `json:"clubs"`
 	Bio          string   `json:"bio"`
 }
 

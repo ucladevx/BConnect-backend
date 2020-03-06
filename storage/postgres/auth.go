@@ -140,6 +140,7 @@ func (client *Client) SET(email string, uuid string, userModded *models.User) (m
 	gradYear := userModded.GradYear
 	interests := userModded.Interests
 	bio := userModded.Bio
+	clubs := userModded.Clubs
 
 	if userModded.FirstName == "" {
 		fname = user.FirstName
@@ -159,6 +160,9 @@ func (client *Client) SET(email string, uuid string, userModded *models.User) (m
 	if userModded.Bio == "" {
 		bio = user.Bio
 	}
+	if userModded.Clubs == "" {
+		bio = user.Clubs
+	}
 
 	user.FirstName = fname
 	user.LastName = lname
@@ -166,6 +170,7 @@ func (client *Client) SET(email string, uuid string, userModded *models.User) (m
 	user.GradYear = gradYear
 	user.Interests = interests
 	user.Bio = bio
+	user.Clubs = clubs
 	client.client.Save(&user)
 
 	if err := client.client.Where("EMAIL = ? AND UUID = ?", email, uuid).Find(&user); err != nil {
