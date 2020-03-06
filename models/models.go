@@ -8,17 +8,29 @@ import (
 // Location type definition
 type Location int
 
+// TODO - implement for privacy-forward implementation of this
+
+// UserLocation attempts to create a less obvious mapping of users to locations for privacy
+type UserLocation struct {
+	UUID         string   `json:"uuid"`
+	UserLocation Location `json:"location"`
+}
+
 // User user struct
 type User struct {
 	gorm.Model
-	FirstName    string   `json:"firstname"`
-	LastName     string   `json:"lastname"`
-	Email        string   `json:"email"`
+	FirstName    string   `json:"fname"`
+	LastName     string   `json:"lname"`
+	Email        string   `json:"username"`
 	Password     string   `json:"password"`
 	PhoneNumber  string   `json:"phonenumber"`
 	ProfilePic   string   `json:"profilepic"`
 	UUID         string   `json:"uuid"`
+	Major        string   `json:"major"`
+	GradYear     string   `json:"year"`
 	UserLocation Location `json:"location"`
+	Interests    string   `json:"interests"`
+	Bio          string   `json:"bio"`
 }
 
 // Friends structure of friend
@@ -45,7 +57,6 @@ type FriendRequest struct {
 type Token struct {
 	jwt.Claims
 	UUID           string
-	FirstName      string
 	Email          string
 	StandardClaims *jwt.StandardClaims
 }

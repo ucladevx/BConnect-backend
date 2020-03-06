@@ -54,9 +54,8 @@ func (client *Client) findOne(email, password string) (map[string]interface{}, s
 	}
 
 	tk := &models.Token{
-		UUID:      user.UUID,
-		FirstName: user.FirstName,
-		Email:     user.Email,
+		UUID:  user.UUID,
+		Email: user.Email,
 		StandardClaims: &jwt.StandardClaims{
 			ExpiresAt: expiresAt.Unix(),
 		},
@@ -106,7 +105,6 @@ func generateRandomString(s int) (string, error) {
 func generateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
-	// Note that err == nil only if we read len(b) bytes.
 	if err != nil {
 		return nil, err
 	}
@@ -131,15 +129,53 @@ func (client *Client) PUT(email string, password string, firstname string, lastn
 }
 
 // SET sets updated fields
-func (client *Client) SET(email string, password string, firstName string, lastName string) (bool, error) {
+func (client *Client) SET(email string, uuid string, userModded *models.User) (map[string]interface{}, error) {
 	var user models.User
-	if err := client.client.Where("EMAIL = ? AND PASSWORD = ?", email, password).Find(&user); err != nil {
+	if err := client.client.Where("EMAIL = ? AND UUID = ?", email, uuid).Find(&user); err != nil {
+		print(len(err.GetErrors()))
 	}
-	user.FirstName = firstName
-	user.LastName = lastName
+
+	fname := userModded.FirstName
+	lname := userModded.LastName
+	major := userModded.Major
+	gradYear := userModded.GradYear
+	interests := userModded.Interests
+	bio := userModded.Bio
+
+	if userModded.FirstName == "" {
+		fname = user.FirstName
+	}
+	if userModded.LastName == "" {
+		lname = user.LastName
+	}
+	if userModded.Major == "" {
+		major = user.Major
+	}
+	if userModded.GradYear == "" {
+		gradYear = user.GradYear
+	}
+	if userModded.Interests == "" {
+		interests = user.Interests
+	}
+	if userModded.Bio == "" {
+		bio = user.Bio
+	}
+
+	user.FirstName = fname
+	user.LastName = lname
+	user.Major = major
+	user.GradYear = gradYear
+	user.Interests = interests
+	user.Bio = bio
 	client.client.Save(&user)
 
-	return true, nil
+	if err := client.client.Where("EMAIL = ? AND UUID = ?", email, uuid).Find(&user); err != nil {
+	}
+
+	var resp = map[string]interface{}{"status": false, "message": "logged in"}
+	resp["mod_user"] = user
+
+	return resp, nil
 }
 
 // DEL dels clients

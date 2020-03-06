@@ -23,7 +23,6 @@ func startServerAndServices(config Config) {
 		friendDB = postgres.HerokuConnect("HEROKU_POSTGRESQL_GOLD_URL")
 	}
 	if !ok {
-		print("HHH")
 		db = postgres.Connect(config.Storage.UserHost,
 			config.Storage.UserUsername,
 			config.Storage.Username,

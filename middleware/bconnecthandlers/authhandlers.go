@@ -39,7 +39,6 @@ func VerifyToken(next http.Handler) http.Handler {
 		})
 
 		if err != nil {
-			print(err.Error())
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}

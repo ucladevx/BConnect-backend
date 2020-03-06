@@ -15,7 +15,6 @@ import (
 type Claims struct {
 	jwt.MapClaims
 	UUID           string
-	FirstName      string
 	Email          string
 	StandardClaims *jwt.StandardClaims
 }
@@ -23,7 +22,7 @@ type Claims struct {
 // AuthService abstract server-side authentication in case we switch from whatever current auth scheme we are using
 type AuthService interface {
 	GET(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time)
-	SET(email string, password string, firstName string, lastName string) (bool, error)
+	SET(email string, uuid string, userModded *models.User) (map[string]interface{}, error)
 	PUT(email string, password string, firstName string, lastName string) (bool, error)
 	DEL(username string, password string) (bool, error)
 	REFRESH()
@@ -98,7 +97,7 @@ func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
 			Expires: expirationTime,
 		})
 		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
+			Name:    "refresh",
 			Value:   refreshToken,
 			Expires: refreshExpirationTime,
 		})
@@ -121,7 +120,7 @@ func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 			Expires: expirationTime,
 		})
 		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
+			Name:    "refresh",
 			Value:   refreshToken,
 			Expires: refreshExpirationTime,
 		})
@@ -131,15 +130,20 @@ func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 
 // Set changes users in DB
 func (auth *UserController) Set(w http.ResponseWriter, r *http.Request) {
-	var userInfo NewUser
+	var userInfo models.User
 
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&userInfo)
 	if err != nil {
 		print(err.Error)
 	}
+	claims := auth.getCurrentUserFromTokenProvided(w, r)
 
-	auth.Service.SET(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
+	resp, err := auth.Service.SET(claims.Email, claims.UUID, &userInfo)
+	if err != nil {
+		print(err.Error)
+	}
+	json.NewEncoder(w).Encode(resp)
 }
 
 // AddFriend generates friendRequest to specified UUID
