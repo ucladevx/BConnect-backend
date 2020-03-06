@@ -92,14 +92,16 @@ func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	resp, token, refreshToken, expirationTime, refreshExpirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
 	if token != "" {
 		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
-			Value:   token,
-			Expires: expirationTime,
+			Name:     "token",
+			Value:    token,
+			Expires:  expirationTime,
+			HttpOnly: true,
 		})
 		http.SetCookie(w, &http.Cookie{
-			Name:    "refresh",
-			Value:   refreshToken,
-			Expires: refreshExpirationTime,
+			Name:     "refresh",
+			Value:    refreshToken,
+			Expires:  refreshExpirationTime,
+			HttpOnly: true,
 		})
 		json.NewEncoder(w).Encode(resp)
 	}
@@ -115,14 +117,16 @@ func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	resp, token, refreshToken, expirationTime, refreshExpirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
 	if token != "" {
 		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
-			Value:   token,
-			Expires: expirationTime,
+			Name:     "token",
+			Value:    token,
+			Expires:  expirationTime,
+			HttpOnly: true,
 		})
 		http.SetCookie(w, &http.Cookie{
-			Name:    "refresh",
-			Value:   refreshToken,
-			Expires: refreshExpirationTime,
+			Name:     "refresh",
+			Value:    refreshToken,
+			Expires:  refreshExpirationTime,
+			HttpOnly: true,
 		})
 		json.NewEncoder(w).Encode(resp)
 	}
