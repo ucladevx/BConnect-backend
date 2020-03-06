@@ -132,7 +132,6 @@ func (client *Client) PUT(email string, password string, firstname string, lastn
 func (client *Client) SET(email string, uuid string, userModded *models.User) (map[string]interface{}, error) {
 	var user models.User
 	if err := client.client.Where("EMAIL = ? AND UUID = ?", email, uuid).Find(&user); err != nil {
-		print(len(err.GetErrors()))
 	}
 
 	fname := userModded.FirstName
