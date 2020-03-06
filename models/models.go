@@ -26,9 +26,9 @@ type User struct {
 	PhoneNumber  string   `json:"phonenumber"`
 	ProfilePic   string   `json:"profilepic"`
 	UUID         string   `json:"uuid"`
-	Major        string   `json:"major"`
+	Major        string   `json:"degree"`
 	GradYear     string   `json:"year"`
-	UserLocation Location `json:"location"`
+	UserLocation Location `json:"locObj"`
 	Interests    string   `json:"interests"`
 	Bio          string   `json:"bio"`
 }
