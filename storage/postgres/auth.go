@@ -165,10 +165,10 @@ func (client *Client) SET(email string, uuid string, userModded *models.User) (m
 	if userModded.Clubs == "" {
 		bio = user.Clubs
 	}
-	if userModded.Lat == 0 {
+	if userModded.Lat == "" {
 		lat = user.Lat
 	}
-	if userModded.Lon == 0 {
+	if userModded.Lon == "" {
 		lon = user.Lon
 	}
 
