@@ -124,6 +124,9 @@ func (client *Client) PUT(email string, password string, firstname string, lastn
 	user.FirstName = firstname
 	user.LastName = lastname
 	user.UUID = uuid.UUID()
+	if client.client.NewRecord(user) {
+		return false, nil
+	}
 	client.client.Create(user)
 	return true, nil
 }
