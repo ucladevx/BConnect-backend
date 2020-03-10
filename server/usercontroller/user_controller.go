@@ -109,20 +109,8 @@ func (auth *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	var userInfo Auth
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&userInfo)
-	resp, token, refreshToken, expirationTime, refreshExpirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
+	resp, token, _, _, _ := auth.Service.GET(userInfo.Username, userInfo.Password)
 	if token != "" {
-		http.SetCookie(w, &http.Cookie{
-			Name:     "token",
-			Value:    token,
-			Expires:  expirationTime,
-			HttpOnly: true,
-		})
-		http.SetCookie(w, &http.Cookie{
-			Name:     "refresh",
-			Value:    refreshToken,
-			Expires:  refreshExpirationTime,
-			HttpOnly: true,
-		})
 		json.NewEncoder(w).Encode(resp)
 	}
 }
@@ -134,20 +122,8 @@ func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	decoder.Decode(&userInfo)
 
 	auth.Service.PUT(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
-	resp, token, refreshToken, expirationTime, refreshExpirationTime := auth.Service.GET(userInfo.Username, userInfo.Password)
+	resp, token, _, _, _ := auth.Service.GET(userInfo.Username, userInfo.Password)
 	if token != "" {
-		http.SetCookie(w, &http.Cookie{
-			Name:     "token",
-			Value:    token,
-			Expires:  expirationTime,
-			HttpOnly: true,
-		})
-		http.SetCookie(w, &http.Cookie{
-			Name:     "refresh",
-			Value:    refreshToken,
-			Expires:  refreshExpirationTime,
-			HttpOnly: true,
-		})
 		json.NewEncoder(w).Encode(resp)
 	}
 }
@@ -209,14 +185,8 @@ func (auth *UserController) Logout(w http.ResponseWriter, r *http.Request) {
 // Refresh generates a new authentication token for the current user and sends it
 func (auth *UserController) Refresh(w http.ResponseWriter, r *http.Request) {
 	refreshClaim := auth.getUUIDFromRefreshToken(w, r)
-	resp, token, expirationTime := auth.Service.REFRESH(refreshClaim.UUID)
+	resp, token, _ := auth.Service.REFRESH(refreshClaim.UUID)
 	if token != "" {
-		http.SetCookie(w, &http.Cookie{
-			Name:     "token",
-			Value:    token,
-			Expires:  expirationTime,
-			HttpOnly: true,
-		})
 		json.NewEncoder(w).Encode(resp)
 	}
 }
