@@ -123,7 +123,11 @@ func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	var resp = map[string]interface{}{"status": false, "user": userInfo}
 	json.NewEncoder(w).Encode(resp)
 
-	auth.Service.PUT(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
+	status, _ := auth.Service.PUT(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
+	if status != true {
+		http.Error(w, "Error signing up", 500)
+		return
+	}
 	resp, token, _, _, _ := auth.Service.GET(userInfo.Username, userInfo.Password)
 	if token != "" {
 		json.NewEncoder(w).Encode(resp)

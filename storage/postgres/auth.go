@@ -128,6 +128,9 @@ func (client *Client) PUT(email string, password string, firstname string, lastn
 		return false, nil
 	}
 	client.client.Create(user)
+	if client.client.NewRecord(user) {
+		return false, nil
+	}
 	return true, nil
 }
 
