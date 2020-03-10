@@ -120,6 +120,8 @@ func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	var userInfo NewUser
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&userInfo)
+	var resp = map[string]interface{}{"status": false, "user": userInfo}
+	json.NewEncoder(w).Encode(resp)
 
 	auth.Service.PUT(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
 	resp, token, _, _, _ := auth.Service.GET(userInfo.Username, userInfo.Password)
