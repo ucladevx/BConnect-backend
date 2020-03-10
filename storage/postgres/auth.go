@@ -141,6 +141,8 @@ func (client *Client) SET(email string, uuid string, userModded *models.User) (m
 	interests := userModded.Interests
 	bio := userModded.Bio
 	clubs := userModded.Clubs
+	lat := userModded.Lat
+	lon := userModded.Lon
 
 	if userModded.FirstName == "" {
 		fname = user.FirstName
@@ -163,6 +165,12 @@ func (client *Client) SET(email string, uuid string, userModded *models.User) (m
 	if userModded.Clubs == "" {
 		bio = user.Clubs
 	}
+	if userModded.Lat == 0 {
+		lat = user.Lat
+	}
+	if userModded.Lon == 0 {
+		lon = user.Lon
+	}
 
 	user.FirstName = fname
 	user.LastName = lname
@@ -171,6 +179,8 @@ func (client *Client) SET(email string, uuid string, userModded *models.User) (m
 	user.Interests = interests
 	user.Bio = bio
 	user.Clubs = clubs
+	user.Lat = lat
+	user.Lon = lon
 	client.client.Save(&user)
 
 	if err := client.client.Where("EMAIL = ? AND UUID = ?", email, uuid).Find(&user); err != nil {

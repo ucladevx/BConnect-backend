@@ -19,19 +19,20 @@ type UserLocation struct {
 // User user struct
 type User struct {
 	gorm.Model
-	FirstName    string   `json:"fname"`
-	LastName     string   `json:"lname"`
-	Email        string   `json:"username"`
-	Password     string   `json:"password"`
-	PhoneNumber  string   `json:"phonenumber"`
-	ProfilePic   string   `json:"profilepic"`
-	UUID         string   `json:"uuid"`
-	Major        string   `json:"degree"`
-	GradYear     string   `json:"year"`
-	UserLocation Location `json:"locObj"`
-	Interests    string   `json:"interests"`
-	Clubs        string   `json:"clubs"`
-	Bio          string   `json:"bio"`
+	FirstName   string  `json:"fname"`
+	LastName    string  `json:"lname"`
+	Email       string  `json:"username"`
+	Password    string  `json:"password"`
+	PhoneNumber string  `json:"phonenumber"`
+	ProfilePic  string  `json:"profilepic"`
+	UUID        string  `json:"uuid"`
+	Major       string  `json:"degree"`
+	GradYear    string  `json:"year"`
+	Lat         float64 `json:"lat"`
+	Lon         float64 `json:"lon"`
+	Interests   string  `json:"interests"`
+	Clubs       string  `json:"clubs"`
+	Bio         string  `json:"bio"`
 }
 
 // Friends structure of friend
