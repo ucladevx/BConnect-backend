@@ -88,3 +88,6 @@ type Message struct {
 // Interests interests
 type Interests struct {
 }
+
+// Filterer filters
+type Filterer func([]string) map[string]interface{}

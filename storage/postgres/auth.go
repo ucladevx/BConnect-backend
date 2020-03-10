@@ -188,6 +188,32 @@ func (client *Client) DEL(key string, password string) (bool, error) {
 }
 
 //REFRESH generates a new refresh token for the authenticated client
-func (client *Client) REFRESH() {
+func (client *Client) REFRESH(uuid string) (map[string]interface{}, string, time.Time) {
+	user := &models.User{}
+	if err := client.client.Where("UUID = ?", uuid).First(user).Error; err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "UUID not found"}
+		return resp, "", time.Time{}
+	}
 
+	expiresAt := time.Now().Add(time.Minute * 15)
+
+	tk := &models.Token{
+		UUID:  user.UUID,
+		Email: user.Email,
+		StandardClaims: &jwt.StandardClaims{
+			ExpiresAt: expiresAt.Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+
+	tokenString, error := token.SignedString([]byte("secret"))
+	if error != nil {
+		fmt.Println(error)
+	}
+
+	var resp = map[string]interface{}{"status": false, "message": "logged in"}
+	resp["token"] = tokenString
+	resp["user"] = user
+
+	return resp, tokenString, expiresAt
 }

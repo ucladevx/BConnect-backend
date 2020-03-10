@@ -36,12 +36,14 @@ func startServerAndServices(config Config) {
 
 	auth := postgres.NewPostgresClient(db)
 	userActions := postgres.NewUserActions(db, friendDB)
+	filters := postgres.NewFilterers(db, friendDB)
 
 	postgres.CreatePostgresTables(auth, userActions)
 
 	var userController = usercontroller.UserController{
 		Service: auth,
 		Actions: userActions,
+		Filters: filters,
 	}
 
 	r := mux.NewRouter()

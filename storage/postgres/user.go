@@ -94,6 +94,11 @@ func (user *UserActions) GET(currUUID string) map[string]interface{} {
 	return resp
 }
 
+// FILTER filters based on categories
+func (user *UserActions) FILTER(filter models.Filterer, filters ...string) map[string]interface{} {
+	return filter(filters)
+}
+
 // LEAVE logs users out
 func (user *UserActions) LEAVE(currUUID string) {
 
