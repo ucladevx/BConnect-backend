@@ -121,7 +121,6 @@ func (auth *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&userInfo)
 	var resp = map[string]interface{}{"status": false, "user": userInfo}
-	json.NewEncoder(w).Encode(resp)
 
 	status, _ := auth.Service.PUT(userInfo.Username, userInfo.Password, userInfo.FName, userInfo.LName)
 	if status != true {
