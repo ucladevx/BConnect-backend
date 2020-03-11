@@ -28,8 +28,8 @@ type User struct {
 	UUID        string `json:"uuid"`
 	Major       string `json:"degree"`
 	GradYear    string `json:"year"`
-	Lat         string `json:"lat"`
-	Lon         string `json:"lon"`
+	Lat         int64  `json:"lat"`
+	Lon         int64  `json:"lon"`
 	Interests   string `json:"interests"`
 	Clubs       string `json:"clubs"`
 	Bio         string `json:"bio"`

@@ -101,7 +101,7 @@ func (auth *UserController) AuthSetup(r *mux.Router) {
 	r.HandleFunc("/addfriend", auth.AddFriend).Methods("GET")
 	r.HandleFunc("/acceptfriend", auth.AcceptFriend).Methods("GET")
 	r.HandleFunc("/getfriends", auth.GetFriend).Methods("GET")
-	r.HandleFunc("/filter/{filterers}", auth.Filter).Methods("GET")
+	r.HandleFunc("/filter/{filterOne}/{filterTwo}/{filterThree}/{filterFour}/{filterFive}", auth.Filter).Methods("GET")
 }
 
 // Login login users and provides authentication token for user
@@ -199,8 +199,24 @@ func (auth *UserController) Refresh(w http.ResponseWriter, r *http.Request) {
 //Filter filters
 func (auth *UserController) Filter(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	filter := params["filterers"]
-	if filter == "" {
+	filterOne := params["filterOne"]
+	if filterOne == "" {
+
+	}
+	filterTwo := params["filterTwo"]
+	if filterTwo == "" {
+
+	}
+	filterThree := params["filterThree"]
+	if filterThree == "" {
+
+	}
+	filterFour := params["filterFour"]
+	if filterFour == "" {
+
+	}
+	filterFive := params["filterFive"]
+	if filterFive == "" {
 
 	}
 	funcMapper := map[string]models.Filterer{
@@ -218,7 +234,7 @@ func (auth *UserController) Filter(w http.ResponseWriter, r *http.Request) {
 		"radius":    strings.Split(r.URL.Query().Get("radius"), ","),
 	}
 
-	var resp = funcMapper[filter](categories[filter])
+	var resp = funcMapper[filterOne](categories[filterOne])
 	json.NewEncoder(w).Encode(resp)
 }
 
