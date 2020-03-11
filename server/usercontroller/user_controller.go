@@ -47,11 +47,12 @@ type UserService interface {
 
 // Filterers abstracts filters
 type Filterers interface {
+	AllFilter(emptyArgs []string) map[string]interface{}
 	NameFilter(names []string) map[string]interface{}
-	MajorFilter(names []string) map[string]interface{}
-	GradYearFilter(names []string) map[string]interface{}
-	InterestsFilter(names []string) map[string]interface{}
-	LocationRadiusFilter(names []string) map[string]interface{}
+	MajorFilter(majors []string) map[string]interface{}
+	GradYearFilter(gradyears []string) map[string]interface{}
+	InterestsFilter(interests []string) map[string]interface{}
+	LocationRadiusFilter(locations []string) map[string]interface{}
 }
 
 // UserController abstract server-side authentication
@@ -201,7 +202,10 @@ func (auth *UserController) Filter(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	filterOne := params["filterOne"]
 	if filterOne == "" {
-
+		var emptyArgs []string
+		var resp = auth.Filters.AllFilter(emptyArgs)
+		json.NewEncoder(w).Encode(resp)
+		return
 	}
 	filterTwo := params["filterTwo"]
 	if filterTwo == "" {

@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"strconv"
+
 	"github.com/jinzhu/gorm"
 	"github.com/ucladevx/BConnect-backend/models"
 )
@@ -17,6 +19,17 @@ func NewFilterers(client *gorm.DB, friendClient *gorm.DB) *Filters {
 		client: client,
 		friend: friendClient,
 	}
+}
+
+// AllFilter filters
+func (f Filters) AllFilter(emptyArgs []string) map[string]interface{} {
+	var user []models.User
+	if err := f.client.Find(&user); err != nil {
+
+	}
+
+	var resp = map[string]interface{}{"matches": user}
+	return resp
 }
 
 // NameFilter filters
@@ -84,7 +97,8 @@ func (f Filters) LocationRadiusFilter(radius []string) map[string]interface{} {
 	var user []models.User
 	var curr *gorm.DB
 	for i := 0; i < len(radius); i++ {
-		curr = f.client.Where("LOCATION = ?", radius[i])
+		read, _ := strconv.ParseFloat(radius[i], 64)
+		curr = f.client.Where("LAT <= ?", read)
 	}
 	if err := curr.Find(&user); err != nil {
 
