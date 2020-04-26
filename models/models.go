@@ -25,7 +25,7 @@ type User struct {
 	Password    string  `json:"password"`
 	PhoneNumber string  `json:"phonenumber"`
 	ProfilePic  string  `json:"profilepic"`
-	UUID        string  `json:"uuid"`
+	UserID      string  `json:"userid"`
 	Major       string  `json:"degree"`
 	GradYear    string  `json:"year"`
 	Lat         float64 `json:"lat"`
@@ -38,8 +38,8 @@ type User struct {
 // Friends structure of friend
 type Friends struct {
 	gorm.Model
-	UUID         string `json:"uuid"`
-	FUUID        string `json:"fuuid"`
+	UserID       string `json:"uuid"`
+	FriendID     string `json:"fuuid"`
 	FReqMess     string `json:"msg"`
 	TimeStamp    int64  `json:"timestamp"`
 	Status       int    `json:"status"`
@@ -88,7 +88,12 @@ type Message struct {
 
 // Interests interests
 type Interests struct {
+	UserID   string `json:"userid"`
+	Interest string `json:"interest"`
 }
 
 // Filterer filters
-type Filterer func([]string) map[string]interface{}
+type Filterer func(*gorm.DB, []string) *gorm.DB
+
+// Finder finds
+type Finder func(map[string]Filterer, map[string][]string) map[string]interface{}

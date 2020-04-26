@@ -1,4 +1,4 @@
-package bconnecthandlers
+package middleware
 
 import (
 	"context"

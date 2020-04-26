@@ -6,8 +6,9 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
-	"github.com/ucladevx/BConnect-backend/middleware/bconnecthandlers"
-	"github.com/ucladevx/BConnect-backend/server/usercontroller"
+	"github.com/ucladevx/BConnect-backend/controllers"
+	"github.com/ucladevx/BConnect-backend/middleware"
+	"github.com/ucladevx/BConnect-backend/services/users"
 	"github.com/ucladevx/BConnect-backend/storage/postgres"
 
 	"github.com/gorilla/handlers"
@@ -16,41 +17,32 @@ import (
 
 func startServerAndServices(config Config) {
 	var db *gorm.DB
-	var friendDB *gorm.DB
 	_, ok := os.LookupEnv("DATABASE_URL")
 	if ok {
 		db = postgres.HerokuConnect("DATABASE_URL")
-		friendDB = postgres.HerokuConnect("HEROKU_POSTGRESQL_GOLD_URL")
 	}
 	if !ok {
 		db = postgres.Connect(config.Storage.UserHost,
 			config.Storage.UserUsername,
 			config.Storage.Username,
 			config.Storage.UserPassword)
-
-		friendDB = postgres.Connect(config.Storage.FriendHost,
-			config.Storage.FriendUsername,
-			config.Storage.Friendname,
-			config.Storage.FriendPassword)
 	}
 
-	auth := postgres.NewPostgresClient(db)
-	userActions := postgres.NewUserActions(db, friendDB)
-	filters := postgres.NewFilterers(db, friendDB)
+	userStore := postgres.NewUserStorage(db)
+	friendStore := postgres.NewFriendStorage(db)
+	filters := postgres.NewFilterers(db)
 
-	postgres.CreatePostgresTables(auth, userActions)
+	postgres.CreatePostgresTables(userStore, friendStore)
 
-	var userController = usercontroller.UserController{
-		Service: auth,
-		Actions: userActions,
-		Filters: filters,
-	}
+	userService := users.NewUserService(userStore, friendStore)
+
+	userController := controllers.NewUserController(userService, filters)
 
 	r := mux.NewRouter()
 	http.Handle("/", r)
 	userController.Setup(r)
 	s := r.PathPrefix("/auth").Subrouter()
-	s.Use(bconnecthandlers.VerifyToken)
+	s.Use(middleware.VerifyToken)
 	userController.AuthSetup(s)
 
 	port, ok := os.LookupEnv("PORT")

@@ -3,6 +3,7 @@ module github.com/ucladevx/BConnect-backend
 go 1.13
 
 require (
+	github.com/Rahul12344/Recipes v0.0.0-20200326024344-c11dbd0b85f1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
