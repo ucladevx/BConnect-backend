@@ -8,6 +8,11 @@ import (
 // Location type definition
 type Location int
 
+//FilterReturn return type of filter
+type FilterReturn struct {
+	Filter *gorm.DB
+}
+
 // TODO - implement for privacy-forward implementation of this
 
 // UserLocation attempts to create a less obvious mapping of users to locations for privacy
@@ -93,7 +98,7 @@ type Interests struct {
 }
 
 // Filterer filters
-type Filterer func(*gorm.DB, []string) *gorm.DB
+type Filterer func(*FilterReturn, []string) *FilterReturn
 
 // Finder finds
 type Finder func(map[string]Filterer, map[string][]string) map[string]interface{}

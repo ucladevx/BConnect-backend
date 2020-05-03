@@ -8,7 +8,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	"github.com/ucladevx/BConnect-backend/models"
 )
 
@@ -44,11 +43,11 @@ type UserService interface {
 
 // Filterers abstracts filters
 type Filterers interface {
-	NameFilter(curr *gorm.DB, names []string) *gorm.DB
-	MajorFilter(curr *gorm.DB, majors []string) *gorm.DB
-	GradYearFilter(curr *gorm.DB, gradYear []string) *gorm.DB
-	InterestsFilter(curr *gorm.DB, interests []string) *gorm.DB
-	LocationRadiusFilter(curr *gorm.DB, radius []string) *gorm.DB
+	NameFilter(curr *models.FilterReturn, names []string) *models.FilterReturn
+	MajorFilter(curr *models.FilterReturn, majors []string) *models.FilterReturn
+	GradYearFilter(curr *models.FilterReturn, gradYear []string) *models.FilterReturn
+	InterestsFilter(curr *models.FilterReturn, interests []string) *models.FilterReturn
+	LocationRadiusFilter(curr *models.FilterReturn, radius []string) *models.FilterReturn
 	FinalFilter(filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
 }
 
