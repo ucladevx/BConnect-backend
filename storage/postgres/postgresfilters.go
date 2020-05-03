@@ -60,7 +60,7 @@ func (f Filters) InterestsFilter(curr *models.FilterReturn, interests []string) 
 func (f Filters) LocationRadiusFilter(curr *models.FilterReturn, radius []string) *models.FilterReturn {
 	for i := 0; i < len(radius); i++ {
 		read, _ := strconv.ParseFloat(radius[i], 64)
-		curr.Filter = curr.Filter.Where("LAT <= ?", read)
+		curr.Filter = curr.Filter.Where("LON <= ?", read)
 	}
 	return curr
 }
