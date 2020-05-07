@@ -29,13 +29,11 @@ func startServerAndServices(config Config) {
 	}
 
 	userStore := postgres.NewUserStorage(db)
-	friendStore := postgres.NewFriendStorage(db)
 	filters := postgres.NewFilterers(db)
 
-	postgres.CreatePostgresTables(userStore, friendStore)
+	postgres.CreatePostgresTables(userStore)
 
-	userService := users.NewUserService(userStore, friendStore)
-
+	userService := users.NewUserService(userStore)
 	userController := controllers.NewUserController(userService, filters)
 
 	r := mux.NewRouter()

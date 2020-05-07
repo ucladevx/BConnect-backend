@@ -98,14 +98,8 @@ func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
 	if userModded.GradYear == "" {
 		gradYear = user.GradYear
 	}
-	if userModded.Interests == "" {
-		interests = user.Interests
-	}
 	if userModded.Bio == "" {
 		bio = user.Bio
-	}
-	if userModded.Clubs == "" {
-		bio = user.Clubs
 	}
 	if userModded.Lat == 0 {
 		lat = user.Lat
@@ -129,6 +123,72 @@ func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
 	}
 
 	return &user
+}
+
+func (us *UserStorage) AddFriend(userID string, friend *models.User) *models.User {
+	var user models.User
+
+	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
+		us.client.Model(&user).Association("Friends").Append(friend)
+	}
+
+	return &user
+}
+
+func (us *UserStorage) AddInterest(userID string, interest *models.Interest) *models.User {
+	var user models.User
+
+	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
+		us.client.Model(&user).Association("Interests").Append(interest)
+	}
+
+	return &user
+}
+
+func (us *UserStorage) AddClub(userID string, club *models.Club) *models.User {
+	var user models.User
+
+	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
+		us.client.Model(&user).Association("Clubs").Append(club)
+	}
+
+	return &user
+}
+
+func (us *UserStorage) GetInterests(userID string) []*models.Interest {
+	var user models.User
+
+	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
+		interests := make([]*models.Interest, us.client.Model(&user).Association("Interests").Count())
+		us.client.Model(&user).Association("Interests").Find(&interests)
+		return interests
+	}
+
+	return nil
+}
+
+func (us *UserStorage) GetClubs(userID string) []*models.Club {
+	var user models.User
+
+	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
+		clubs := make([]*models.Club, us.client.Model(&user).Association("Clubs").Count())
+		us.client.Model(&user).Association("Clubs").Find(&clubs)
+		return clubs
+	}
+
+	return nil
+}
+
+func (us *UserStorage) GetFriends(userID string) []*models.User {
+	var user models.User
+
+	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
+		friends := make([]*models.User, us.client.Model(&user).Association("Friends").Count())
+		us.client.Model(&user).Association("Friends").Find(&friends)
+		return friends
+	}
+
+	return nil
 }
 
 // DeleteUser dels clients

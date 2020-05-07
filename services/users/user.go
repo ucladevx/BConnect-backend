@@ -15,30 +15,26 @@ type UserStorage interface {
 	GetUser(username string, password string) (*models.User, string)
 	NewUser(email string, uuid string, firstname string, lastname string) (bool, error)
 	ModifyUser(user *models.User) *models.User
+	AddFriend(userID string, friend *models.User) *models.User
+	AddInterest(userID string, interest *models.Interest) *models.User
+	AddClub(userID string, club *models.Club) *models.User
+	GetInterests(userID string) []*models.Interest
+	GetClubs(userID string) []*models.Club
+	GetFriends(userID string) []*models.User
 	DeleteUser(username string, password string) (bool, error)
 	GetFromID(uuid string) *models.User
 	Leave(currUUID string)
 }
 
-//FriendStorage user friend store
-type FriendStorage interface {
-	AddFriend(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
-	AcceptFriend(currUUID string, friendUUID string) (*models.Friends, error)
-	GetFriends(currUUID string) map[string]interface{}
-	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
-}
-
 //UserService holds services for users
 type UserService struct {
 	userStore   UserStorage
-	friendStore FriendStorage
 }
 
 //NewUserService constructs new user service
-func NewUserService(userStore UserStorage, friendStore FriendStorage) *UserService {
+func NewUserService(userStore UserStorage) *UserService {
 	return &UserService{
 		userStore:   userStore,
-		friendStore: friendStore,
 	}
 }
 
@@ -179,7 +175,7 @@ func (us *UserService) AcceptFriendRequest(currUUID string, friendUUID string) (
 
 //GetFriends removes user recipe
 func (us *UserService) GetFriends(currUUID string) map[string]interface{} {
-	return us.friendStore.GetFriends(currUUID)
+	return us.userStore.GetFriends(currUUID)
 }
 
 //Filter filters
