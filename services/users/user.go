@@ -15,15 +15,16 @@ type UserStorage interface {
 	GetUser(username string, password string) (*models.User, string)
 	NewUser(email string, uuid string, firstname string, lastname string) (bool, error)
 	ModifyUser(user *models.User) *models.User
-	AddFriend(userID string, friend *models.User) *models.User
-	AddInterest(userID string, interest *models.Interest) *models.User
-	AddClub(userID string, club *models.Club) *models.User
-	GetInterests(userID string) []*models.Interest
-	GetClubs(userID string) []*models.Club
-	GetFriends(userID string) []*models.User
+	AddFriend(userID string, friend string, msg string) (*models.User, error)
+	AddInterest(userID string, interestString string) (*models.User, error)
+	AddClub(userID string, clubString string) (*models.User, error)
+	GetInterests(userID string) map[string]interface{}
+	GetClubs(userID string) map[string]interface{}
+	GetFriends(userID string) map[string]interface{}
 	DeleteUser(username string, password string) (bool, error)
 	GetFromID(uuid string) *models.User
 	Leave(currUUID string)
+	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
 }
 
 //UserService holds services for users
@@ -164,13 +165,8 @@ func (us *UserService) RefreshToken(uuid string) (map[string]interface{}, string
 }
 
 //FriendRequest add user recipe
-func (us *UserService) FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error) {
-	return us.friendStore.AddFriend(currUUID, friendUUID, optionalMsg)
-}
-
-//AcceptFriendRequest removes user recipe
-func (us *UserService) AcceptFriendRequest(currUUID string, friendUUID string) (*models.Friends, error) {
-	return us.friendStore.AcceptFriend(currUUID, friendUUID)
+func (us *UserService) FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.User, error) {
+	return us.userStore.AddFriend(currUUID, friendUUID, optionalMsg)
 }
 
 //GetFriends removes user recipe
@@ -180,5 +176,5 @@ func (us *UserService) GetFriends(currUUID string) map[string]interface{} {
 
 //Filter filters
 func (us *UserService) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{} {
-	return us.friendStore.Filter(finder, filters, args)
+	return us.userStore.Filter(finder, filters, args)
 }

@@ -35,8 +35,7 @@ type UserService interface {
 	Signup(email string, password string, firstName string, lastName string) (bool, error)
 	DeleteUser(username string, password string) (bool, error)
 	RefreshToken(uuid string) (map[string]interface{}, string, time.Time)
-	FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
-	AcceptFriendRequest(currUUID string, friendUUID string) (*models.Friends, error)
+	FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.User, error)
 	GetFriends(currUUID string) map[string]interface{}
 	Leave(currUUID string)
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
@@ -78,8 +77,7 @@ func (uc *UserController) AuthSetup(r *mux.Router) {
 	r.HandleFunc("/change", uc.Update).Methods("POST")
 	r.HandleFunc("/delete", uc.DeleteUser).Methods("GET")
 	r.HandleFunc("/addfriend", uc.AddFriend).Methods("GET")
-	r.HandleFunc("/acceptfriend", uc.AcceptFriend).Methods("GET")
-	r.HandleFunc("/getfriends", uc.GetFriend).Methods("GET")
+	r.HandleFunc("/getfriends", uc.GetFriends).Methods("GET")
 	r.HandleFunc("/filter/{filterOne}", uc.Filter).Methods("GET")
 }
 
@@ -140,19 +138,8 @@ func (uc *UserController) AddFriend(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-// AcceptFriend accepts friendRequest from specified UUID
-func (uc *UserController) AcceptFriend(w http.ResponseWriter, r *http.Request) {
-	claims := uc.getCurrentUserFromTokenProvided(w, r)
-	friend, err := uc.UserService.AcceptFriendRequest(claims.UUID, r.URL.Query().Get("friend_uuid"))
-	if err != nil {
-
-	}
-	var resp = map[string]interface{}{"added": true, "friend": friend}
-	json.NewEncoder(w).Encode(resp)
-}
-
 // GetFriend gets a list of user friends
-func (uc *UserController) GetFriend(w http.ResponseWriter, r *http.Request) {
+func (uc *UserController) GetFriends(w http.ResponseWriter, r *http.Request) {
 	claims := uc.getCurrentUserFromTokenProvided(w, r)
 
 	resp := uc.UserService.GetFriends(claims.UUID)

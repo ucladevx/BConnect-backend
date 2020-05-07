@@ -1,8 +1,8 @@
 package postgres
 
 import (
+	"errors"
 	"fmt"
-
 	"github.com/ucladevx/BConnect-backend/models"
 	"github.com/ucladevx/BConnect-backend/utils/uuid"
 
@@ -125,67 +125,112 @@ func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
 	return &user
 }
 
-func (us *UserStorage) AddFriend(userID string, friend *models.User) *models.User {
+func (us *UserStorage) AddFriend(userID string, friendID string, msg string) (*models.User, error) {
 	var user models.User
+	var friend models.User
 
-	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
+	err1 := us.client.Where(&models.User{UserID: userID}).First(&user)
+	err2 := us.client.Where(&models.User{UserID: friendID}).First(&friend)
+	if err1 == nil && err2 == nil {
 		us.client.Model(&user).Association("Friends").Append(friend)
+		return &user, nil
 	}
 
-	return &user
+	return nil, errors.New("user or friend was not found")
 }
 
-func (us *UserStorage) AddInterest(userID string, interest *models.Interest) *models.User {
+func (us *UserStorage) AddInterest(userID string, interestString string) (*models.User, error) {
+	var user models.User
+	var interestStruct models.Interest
+
+	err1 := us.client.Where(&models.User{UserID: userID}).First(&user)
+	err2 := us.client.Where(&models.Interest{Interest: interestString}).First(&interestStruct)
+	if err1 == nil && err2 == nil {
+		us.client.Model(&user).Association("Interests").Append(interestStruct)
+		return &user, nil
+	}
+
+	return nil, errors.New("user or interest was not found")
+}
+
+func (us *UserStorage) AddClub(userID string, clubString string) (*models.User, error){
+	var user models.User
+	var clubStruct models.Club
+
+	err1 := us.client.Where(&models.User{UserID: userID}).First(&user)
+	err2 := us.client.Where(&models.Interest{Interest: clubString}).First(&clubStruct)
+	if err1 == nil && err2 == nil {
+		us.client.Model(&user).Association("Interests").Append(clubStruct)
+		return &user, nil
+	}
+
+	return nil, errors.New("user or club was not found")
+}
+
+func (us *UserStorage) GetInterests(userID string) map[string]interface{} {
 	var user models.User
 
 	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
-		us.client.Model(&user).Association("Interests").Append(interest)
-	}
-
-	return &user
-}
-
-func (us *UserStorage) AddClub(userID string, club *models.Club) *models.User {
-	var user models.User
-
-	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
-		us.client.Model(&user).Association("Clubs").Append(club)
-	}
-
-	return &user
-}
-
-func (us *UserStorage) GetInterests(userID string) []*models.Interest {
-	var user models.User
-
-	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
-		interests := make([]*models.Interest, us.client.Model(&user).Association("Interests").Count())
+		numInterests := us.client.Model(&user).Association("Interests").Count()
+		interests := make([]*models.Interest, numInterests)
+		interestList := make([]string, numInterests)
 		us.client.Model(&user).Association("Interests").Find(&interests)
-		return interests
+
+		for _, val := range interests {
+			interestList = append(interestList, val.Interest)
+		}
+
+		return map[string]interface{}{"num_interests": numInterests, "interests": interestList}
 	}
 
 	return nil
 }
 
-func (us *UserStorage) GetClubs(userID string) []*models.Club {
+func (us *UserStorage) GetClubs(userID string) map[string]interface{} {
 	var user models.User
 
 	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
-		clubs := make([]*models.Club, us.client.Model(&user).Association("Clubs").Count())
+		numClubs := us.client.Model(&user).Association("Clubs").Count()
+		clubs := make([]*models.Club, numClubs)
+		clubList := make([]string, numClubs)
 		us.client.Model(&user).Association("Clubs").Find(&clubs)
-		return clubs
+
+		for _, val := range clubs {
+			clubList = append(clubList, val.Club)
+		}
+
+		return map[string]interface{}{"num_clubs": numClubs, "clubs": clubList}
 	}
 
 	return nil
 }
 
-func (us *UserStorage) GetFriends(userID string) []*models.User {
+func (us *UserStorage) GetFriends(userID string) map[string]interface{} {
 	var user models.User
 
 	if err := us.client.Where(&models.User{UserID: userID}).First(&user); err == nil {
-		friends := make([]*models.User, us.client.Model(&user).Association("Friends").Count())
+		numFriends := us.client.Model(&user).Association("Friends").Count()
+		friends := make([]*models.User, numFriends)
 		us.client.Model(&user).Association("Friends").Find(&friends)
-		return friends
+
+		type friend struct {
+			ID string
+			FirstName string
+			LastName string
+			GradYear string
+		}
+
+		friendList := make([]friend, numFriends)
+		for _, val := range friends {
+			friendList = append(friendList, friend{
+				ID: val.UserID,
+				FirstName: val.FirstName,
+				LastName: val.LastName,
+				GradYear: val.GradYear,
+			})
+		}
+
+		return map[string]interface{}{"num_friends": numFriends, "friends": friendList}
 	}
 
 	return nil
@@ -210,4 +255,9 @@ func (us *UserStorage) GetFromID(uuid string) *models.User {
 // Leave dummy function for logs users out
 func (us *UserStorage) Leave(currUUID string) {
 
+}
+
+// Filter filters based on categories
+func (us *UserStorage) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{} {
+	return finder(filters, args)
 }
