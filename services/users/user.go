@@ -12,17 +12,17 @@ import (
 
 //UserStorage user store
 type UserStorage interface {
-	GetUser(username string, password string) (*models.User, string)
+	GetUser(username string, password string) (*models.User, error)
 	NewUser(email string, uuid string, firstname string, lastname string) (bool, error)
-	ModifyUser(user *models.User) *models.User
+	ModifyUser(user *models.User) (*models.User, error)
 	AddFriend(userID string, friend string, msg string) (*models.User, error)
 	AddInterest(userID string, interestString string) (*models.User, error)
 	AddClub(userID string, clubString string) (*models.User, error)
-	GetInterests(userID string) map[string]interface{}
-	GetClubs(userID string) map[string]interface{}
-	GetFriends(userID string) map[string]interface{}
+	GetInterests(userID string) (map[string]interface{}, error)
+	GetClubs(userID string) (map[string]interface{}, error)
+	GetFriends(userID string) (map[string]interface{}, error)
 	DeleteUser(username string, password string) (bool, error)
-	GetFromID(uuid string) *models.User
+	GetFromID(uuid string) (*models.User, error)
 	Leave(currUUID string)
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
 }
@@ -42,7 +42,7 @@ func NewUserService(userStore UserStorage) *UserService {
 //Login login
 func (us *UserService) Login(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time) {
 	user, err := us.userStore.GetUser(username, password)
-	if err != "" {
+	if err != nil {
 
 	}
 	if user == nil {
@@ -119,8 +119,10 @@ func (us *UserService) Signup(email string, uuid string, firstname string, lastn
 //Update sets categories
 func (us *UserService) Update(user *models.User) (map[string]interface{}, error) {
 	var resp = map[string]interface{}{"status": false, "message": "logged in"}
-	resp["mod_user"] = us.userStore.ModifyUser(user)
-	return resp, nil
+	user, err := us.userStore.ModifyUser(user)
+	resp["mod_user"] = user
+
+	return resp, err
 }
 
 //DeleteUser delete user
@@ -135,8 +137,8 @@ func (us *UserService) Leave(currUUID string) {
 
 //RefreshToken refresh token
 func (us *UserService) RefreshToken(uuid string) (map[string]interface{}, string, time.Time) {
-	user := us.userStore.GetFromID(uuid)
-	if user == nil {
+	user, err := us.userStore.GetFromID(uuid)
+	if err != nil {
 		var resp = map[string]interface{}{"status": false, "message": "UUID not found"}
 		return resp, "", time.Time{}
 	}
@@ -171,7 +173,30 @@ func (us *UserService) FriendRequest(currUUID string, friendUUID string, optiona
 
 //GetFriends removes user recipe
 func (us *UserService) GetFriends(currUUID string) map[string]interface{} {
-	return us.userStore.GetFriends(currUUID)
+	res, err := us.userStore.GetFriends(currUUID)
+	if err != nil {
+		// handle error
+	}
+
+	return res
+}
+
+func (us *UserService) GetInterests(currUUID string) map[string]interface{} {
+	res, err := us.userStore.GetInterests(currUUID)
+	if err != nil {
+		// handle error
+	}
+
+	return res
+}
+
+func (us *UserService) GetClubs(currUUID string) map[string]interface{} {
+	res, err := us.userStore.GetClubs(currUUID)
+	if err != nil {
+		// handle error
+	}
+
+	return res
 }
 
 //Filter filters

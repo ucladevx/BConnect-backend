@@ -37,6 +37,8 @@ type UserService interface {
 	RefreshToken(uuid string) (map[string]interface{}, string, time.Time)
 	FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.User, error)
 	GetFriends(currUUID string) map[string]interface{}
+	GetInterests(currUUID string) map[string]interface{}
+	GetClubs(curUUId string) map[string]interface{}
 	Leave(currUUID string)
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
 }
@@ -138,11 +140,27 @@ func (uc *UserController) AddFriend(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-// GetFriend gets a list of user friends
+// GetFriends gets a list of user friends
 func (uc *UserController) GetFriends(w http.ResponseWriter, r *http.Request) {
 	claims := uc.getCurrentUserFromTokenProvided(w, r)
 
 	resp := uc.UserService.GetFriends(claims.UUID)
+	json.NewEncoder(w).Encode(resp)
+}
+
+// GetInterests gets a list of user interests
+func (uc *UserController) GetInterests(w http.ResponseWriter, r *http.Request) {
+	claims := uc.getCurrentUserFromTokenProvided(w, r)
+
+	resp := uc.UserService.GetInterests(claims.UUID)
+	json.NewEncoder(w).Encode(resp)
+}
+
+// GetClubs gets a list of user clubs
+func (uc *UserController) GetClubs(w http.ResponseWriter, r *http.Request) {
+	claims := uc.getCurrentUserFromTokenProvided(w, r)
+
+	resp := uc.UserService.GetClubs(claims.UUID)
 	json.NewEncoder(w).Encode(resp)
 }
 
