@@ -19,7 +19,7 @@ func (es *EmailStorage) create() {
 	es.client.AutoMigrate(&models.Email{}))
 }
 
-func newEmailStorage(client *gorm.DB) *EmailStorage {
+func NewEmailStorage(client *gorm.DB) *EmailStorage {
 	return &EmailStorage{
 		client: client,
 	}

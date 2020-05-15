@@ -28,13 +28,14 @@ func startServerAndServices(config Config) {
 			config.Storage.UserPassword)
 	}
 
+
 	userStore := postgres.NewUserStorage(db)
 	friendStore := postgres.NewFriendStorage(db)
 	filters := postgres.NewFilterers(db)
+	emailStore := postgres.NewEmailStorage(db)
 
-	postgres.CreatePostgresTables(userStore, friendStore)
-
-	userService := users.NewUserService(userStore, friendStore)
+	postgres.CreatePostgresTables(userStore, friendStore, emailStore)
+	userService := users.NewUserService(userStore, friendStore, emailStore)
 
 	userController := controllers.NewUserController(userService, filters)
 
@@ -59,4 +60,5 @@ func startServerAndServices(config Config) {
 func main() {
 	conf := Conf()
 	startServerAndServices(conf)
+	
 }
