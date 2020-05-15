@@ -250,15 +250,14 @@ func (uc *UserController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	var emailInfo models.Email
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&emailInfo)
-	var resp = map[string]interface{}{"status": false, "email": emailInfo}
-
+	
 	status, _ := uc.UserService.AddEmail(emailInfo.Email)
 	if status != true {
 		http.Error(w, "Error adding email", 500)
 		return
 	}
 
-	var resp = map[string]interface{}{"status": false, "message": "Email registered!"}
+	var resp = map[string]interface{}{"status": false, "message": "Email registered!", "email": emailInfo}
 	json.NewEncoder(w).Encode(resp)
 }
 
