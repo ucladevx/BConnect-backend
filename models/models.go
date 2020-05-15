@@ -106,5 +106,5 @@ type Finder func(map[string]Filterer, map[string][]string) map[string]interface{
 // Email is just an email
 type Email struct {
 	gorm.Model
-	Email       string  `json:"username"`
+	Email       string  `json:"email"`
 }
