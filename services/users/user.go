@@ -29,8 +29,7 @@ type FriendStorage interface {
 }
 
 type EmailStorage interface {
-	NewEmail(email string) (bool, error)
-
+	AddEmail(email string) (bool, error)
 }
 
 //UserService holds services for users
@@ -45,7 +44,7 @@ func NewUserService(userStore UserStorage, friendStore FriendStorage, emailStore
 	return &UserService{
 		userStore:   userStore,
 		friendStore: friendStore,
-		emailStore:  emailStore
+		emailStore:  emailStore,
 	}
 }
 

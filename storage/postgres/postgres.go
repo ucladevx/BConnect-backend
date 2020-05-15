@@ -28,7 +28,7 @@ func HerokuConnect(dbEnv string) *gorm.DB {
 		print(err.Error())
 	}
 	//defer db.Close()
-	fmt.Println("Successfully connected!", db)
+	fmt.Println("Successfully connectedss!", db)
 	return db
 }
 

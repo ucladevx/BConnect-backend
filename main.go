@@ -34,6 +34,9 @@ func startServerAndServices(config Config) {
 	filters := postgres.NewFilterers(db)
 	emailStore := postgres.NewEmailStorage(db)
 
+	//log.Printf("ok, cool")
+	//fmt.Println("ok, cool")
+
 	postgres.CreatePostgresTables(userStore, friendStore, emailStore)
 	userService := users.NewUserService(userStore, friendStore, emailStore)
 
@@ -52,7 +55,6 @@ func startServerAndServices(config Config) {
 	}
 
 	log.Printf("Listening on %s:%s", config.Server.Host, port)
-
 	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "Access-Control-Allow-Origin"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 }

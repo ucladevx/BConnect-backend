@@ -1,13 +1,10 @@
 package postgres
 
 import (
-	"fmt"
 
 	"github.com/ucladevx/BConnect-backend/models"
-	"github.com/ucladevx/BConnect-backend/utils/uuid"
-
 	"github.com/jinzhu/gorm"
-	"golang.org/x/crypto/bcrypt"
+
 )
 
 // EmailStorage user storage
@@ -16,7 +13,7 @@ type EmailStorage struct {
 }
 
 func (es *EmailStorage) create() {
-	es.client.AutoMigrate(&models.Email{}))
+	es.client.AutoMigrate(&models.Email{})
 }
 
 func NewEmailStorage(client *gorm.DB) *EmailStorage {
@@ -25,7 +22,7 @@ func NewEmailStorage(client *gorm.DB) *EmailStorage {
 	}
 }
 
-func (es *EmailStorage) NewEmail(email string) (bool, error) {
+func (es *EmailStorage) AddEmail(email string) (bool, error) {
 	user := &models.Email{}
 	user.Email = email
 	
