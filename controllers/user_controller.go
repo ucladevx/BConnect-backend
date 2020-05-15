@@ -42,8 +42,7 @@ type UserService interface {
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
 
 	AddEmail(email string) (bool, error)
-	//probably ditch the line below
-	//Email(email string) (bool, error)
+	
 }
 
 // Filterers abstracts filters

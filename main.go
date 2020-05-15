@@ -34,9 +34,6 @@ func startServerAndServices(config Config) {
 	filters := postgres.NewFilterers(db)
 	emailStore := postgres.NewEmailStorage(db)
 
-	//log.Printf("ok, cool")
-	//fmt.Println("ok, cool")
-
 	postgres.CreatePostgresTables(userStore, friendStore, emailStore)
 	userService := users.NewUserService(userStore, friendStore, emailStore)
 
