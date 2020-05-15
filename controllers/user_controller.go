@@ -76,7 +76,7 @@ func (uc *UserController) Setup(r *mux.Router) {
 	r.HandleFunc("/signup", uc.Signup).Methods("POST")
 	r.HandleFunc("/refresh", uc.Refresh).Methods("GET")
 
-	r.HandleFunc("/email", uc.Email).Methods("POST")
+	r.HandleFunc("/email", uc.AddEmail).Methods("POST")
 }
 
 // AuthSetup sets up auth handlers
