@@ -28,17 +28,23 @@ type FriendStorage interface {
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
 }
 
+type EmailStorage interface {
+	AddEmail(email string) (bool, error)
+}
+
 //UserService holds services for users
 type UserService struct {
 	userStore   UserStorage
 	friendStore FriendStorage
+	emailStore EmailStorage
 }
 
 //NewUserService constructs new user service
-func NewUserService(userStore UserStorage, friendStore FriendStorage) *UserService {
+func NewUserService(userStore UserStorage, friendStore FriendStorage, emailStore EmailStorage) *UserService {
 	return &UserService{
 		userStore:   userStore,
 		friendStore: friendStore,
+		emailStore:  emailStore,
 	}
 }
 
@@ -185,4 +191,8 @@ func (us *UserService) GetFriends(currUUID string) map[string]interface{} {
 //Filter filters
 func (us *UserService) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{} {
 	return us.friendStore.Filter(finder, filters, args)
+}
+
+func (us *UserService) AddEmail(email string) (bool, error) {
+	return us.emailStore.AddEmail(email)
 }

@@ -28,13 +28,14 @@ func startServerAndServices(config Config) {
 			config.Storage.UserPassword)
 	}
 
+
 	userStore := postgres.NewUserStorage(db)
 	friendStore := postgres.NewFriendStorage(db)
 	filters := postgres.NewFilterers(db)
+	emailStore := postgres.NewEmailStorage(db)
 
-	postgres.CreatePostgresTables(userStore, friendStore)
-
-	userService := users.NewUserService(userStore, friendStore)
+	postgres.CreatePostgresTables(userStore, friendStore, emailStore)
+	userService := users.NewUserService(userStore, friendStore, emailStore)
 
 	userController := controllers.NewUserController(userService, filters)
 
@@ -51,7 +52,6 @@ func startServerAndServices(config Config) {
 	}
 
 	log.Printf("Listening on %s:%s", config.Server.Host, port)
-
 	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "Access-Control-Allow-Origin"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 }
@@ -59,4 +59,5 @@ func startServerAndServices(config Config) {
 func main() {
 	conf := Conf()
 	startServerAndServices(conf)
+	
 }
