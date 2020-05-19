@@ -66,7 +66,7 @@ func (f Filters) LocationRadiusFilter(curr *models.FilterReturn, radius []string
 }
 
 // FinalFilter final filter
-func (f Filters) FinalFilter(filters map[string]models.Filterer, args map[string][]string) map[string]interface{} {
+func (f Filters) FinalFilter(filters map[string]models.Filterer, args map[string][]string) []models.User {
 	var user []models.User
 
 	curr := &models.FilterReturn{
@@ -89,6 +89,5 @@ func (f Filters) FinalFilter(filters map[string]models.Filterer, args map[string
 	}
 	if err := curr.Filter.Find(&user); err != nil {
 	}
-	var resp = map[string]interface{}{"matches": user}
-	return resp
+	return user
 }

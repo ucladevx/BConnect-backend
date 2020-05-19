@@ -36,9 +36,9 @@ type UserService interface {
 	RefreshToken(uuid string) (map[string]interface{}, string, time.Time)
 	FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
 	AcceptFriendRequest(currUUID string, friendUUID string) (*models.Friends, error)
-	GetFriends(currUUID string) map[string]interface{}
+	GetFriends(currUUID string) []models.Friends
 	Leave(currUUID string)
-	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
+	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User
 }
 
 // Filterers abstracts filters
@@ -48,7 +48,7 @@ type Filterers interface {
 	GradYearFilter(curr *models.FilterReturn, gradYear []string) *models.FilterReturn
 	InterestsFilter(curr *models.FilterReturn, interests []string) *models.FilterReturn
 	LocationRadiusFilter(curr *models.FilterReturn, radius []string) *models.FilterReturn
-	FinalFilter(filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
+	FinalFilter(filters map[string]models.Filterer, args map[string][]string) []models.User
 }
 
 // UserController abstract server-side authentication
@@ -154,7 +154,8 @@ func (uc *UserController) AcceptFriend(w http.ResponseWriter, r *http.Request) {
 func (uc *UserController) GetFriend(w http.ResponseWriter, r *http.Request) {
 	claims := uc.getCurrentUserFromTokenProvided(w, r)
 
-	resp := uc.UserService.GetFriends(claims.UUID)
+	friends := uc.UserService.GetFriends(claims.UUID)
+	var resp = map[string]interface{}{"num_friends": len(friends), "friends": friends}
 	json.NewEncoder(w).Encode(resp)
 }
 
@@ -205,7 +206,8 @@ func (uc *UserController) Filter(w http.ResponseWriter, r *http.Request) {
 		"radius":    strings.Split(r.URL.Query().Get("radius"), ","),
 	}
 
-	var resp = uc.UserService.Filter(uc.Filters.FinalFilter, funcMapper, categories)
+	users := uc.UserService.Filter(uc.Filters.FinalFilter, funcMapper, categories)
+	var resp = map[string]interface{}{"users": users}
 	json.NewEncoder(w).Encode(resp)
 }
 
