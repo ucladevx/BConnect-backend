@@ -19,7 +19,7 @@ const (
 func VerifyToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		header := strings.TrimSpace(r.Header.Get("Authorization"))
+		header := strings.TrimSpace(r.Header.Get("x-access-token"))
 
 		if header == "" {
 			w.WriteHeader(http.StatusForbidden)

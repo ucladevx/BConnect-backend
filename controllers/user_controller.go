@@ -225,7 +225,7 @@ func (uc *UserController) Filter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) getCurrentUserFromTokenProvided(w http.ResponseWriter, r *http.Request) Claims {
-	header := strings.TrimSpace(r.Header.Get("Authorization"))
+	header := strings.TrimSpace(r.Header.Get("x-access-token"))
 
 	claims := Claims{}
 
@@ -240,7 +240,7 @@ func (uc *UserController) getCurrentUserFromTokenProvided(w http.ResponseWriter,
 }
 
 func (uc *UserController) getUUIDFromRefreshToken(w http.ResponseWriter, r *http.Request) RefreshClaims {
-	header := strings.TrimSpace(r.Header.Get("Authorization"))
+	header := strings.TrimSpace(r.Header.Get("x-access-token"))
 
 	refreshClaims := RefreshClaims{}
 
