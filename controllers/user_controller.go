@@ -27,12 +27,17 @@ type RefreshClaims struct {
 	StandardClaims *jwt.StandardClaims
 }
 
+//InterestsForm interests
+type InterestsForm struct {
+	Interests []string `json:"interests"`
+}
+
 // UserService abstract user-side functionality in case we switch from whatever current db scheme we are using
 type UserService interface {
 	//first set of parentheses is the input, second set of parens is the outputs
 	Login(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time)
 	Update(user *models.User) (map[string]interface{}, error)
-	Signup(user *models.User, interestsString string) (bool, error)
+	Signup(user *models.User, interestsString []string) (bool, error)
 	DeleteUser(username string, password string) (bool, error)
 	RefreshToken(uuid string) (map[string]interface{}, string, time.Time)
 	FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
@@ -100,7 +105,7 @@ func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
 // Signup signs up users and provides auth token
 func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	var userInfo models.User
-	var interestsInfo models.Interests
+	var interestsInfo InterestsForm
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -109,7 +114,7 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 
 	var resp = map[string]interface{}{"status": false, "user": userInfo}
 
-	status, _ := uc.UserService.Signup(&userInfo, interestsInfo.Interest)
+	status, _ := uc.UserService.Signup(&userInfo, interestsInfo.Interests)
 	if status != true {
 		http.Error(w, "Error signing up", 500)
 		return

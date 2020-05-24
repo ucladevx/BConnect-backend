@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -123,8 +122,7 @@ func generateRandomBytes(n int) ([]byte, error) {
 }
 
 //Signup signs user in
-func (us *UserService) Signup(user *models.User, interestsString string) (bool, error) {
-	interestsList := strings.Split(interestsString, ",")
+func (us *UserService) Signup(user *models.User, interestsList []string) (bool, error) {
 	var interests []models.Interests
 
 	for _, interest := range interestsList {
