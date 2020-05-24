@@ -8,24 +8,44 @@ import (
 // Location type definition
 type Location int
 
+//FilterReturn return type of filter
+type FilterReturn struct {
+	Filter *gorm.DB
+}
+
+// TODO - implement for privacy-forward implementation of this
+
+// UserLocation attempts to create a less obvious mapping of users to locations for privacy
+type UserLocation struct {
+	UUID         string   `json:"uuid"`
+	UserLocation Location `json:"location"`
+}
+
 // User user struct
 type User struct {
 	gorm.Model
-	FirstName    string   `json:"firstname"`
-	LastName     string   `json:"lastname"`
-	Email        string   `json:"email"`
-	Password     string   `json:"password"`
-	PhoneNumber  string   `json:"phonenumber"`
-	ProfilePic   string   `json:"profilepic"`
-	UUID         string   `json:"uuid"`
-	UserLocation Location `json:"location"`
+	UserID      string  `json:"userid"`
+	FirstName   string  `json:"firstname"`
+	LastName    string  `json:"lastname"`
+	Age         int     `json:"age"`
+	GradYear    string  `json:"year"`
+	CurrentJob  string  `json:"currentjob"`
+	Gender      string  `json:"gender"`
+	Email       string  `json:"username"`
+	Major       string  `json:"degree"`
+	Password    string  `json:"password"`
+	PhoneNumber string  `json:"phonenumber"`
+	ProfilePic  string  `json:"profilepic"`
+	Lat         float64 `json:"lat"`
+	Lon         float64 `json:"lon"`
+	Bio         string  `json:"bio"`
 }
 
 // Friends structure of friend
 type Friends struct {
 	gorm.Model
-	UUID         string `json:"uuid"`
-	FUUID        string `json:"fuuid"`
+	UserID       string `json:"uuid"`
+	FriendID     string `json:"fuuid"`
 	FReqMess     string `json:"msg"`
 	TimeStamp    int64  `json:"timestamp"`
 	Status       int    `json:"status"`
@@ -45,8 +65,15 @@ type FriendRequest struct {
 type Token struct {
 	jwt.Claims
 	UUID           string
-	FirstName      string
 	Email          string
+	StandardClaims *jwt.StandardClaims
+}
+
+// RefreshToken refresh tokens
+type RefreshToken struct {
+	jwt.Claims
+	UUID           string
+	ID             string
 	StandardClaims *jwt.StandardClaims
 }
 
@@ -67,4 +94,18 @@ type Message struct {
 
 // Interests interests
 type Interests struct {
+	UserID   string `json:"userid"`
+	Interest string `json:"interest"`
+}
+
+// Filterer filters
+type Filterer func(*FilterReturn, []string) *FilterReturn
+
+// Finder finds
+type Finder func(map[string]Filterer, map[string][]string) []User
+
+// Email is just an email
+type Email struct {
+	gorm.Model
+	Email string `json:"email"`
 }

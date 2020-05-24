@@ -1,9 +1,10 @@
-package bconnecthandlers
+package middleware
 
 import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -39,7 +40,10 @@ func VerifyToken(next http.Handler) http.Handler {
 		})
 
 		if err != nil {
-			print(err.Error())
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		if time.Now().Unix()-claims.StandardClaims.ExpiresAt > 15 {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}

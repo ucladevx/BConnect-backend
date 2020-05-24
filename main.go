@@ -3,9 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/ucladevx/BConnect-backend/bconnecthandlers"
-	"github.com/ucladevx/BConnect-backend/server/userauth"
+	"github.com/jinzhu/gorm"
+	"github.com/ucladevx/BConnect-backend/controllers"
+	"github.com/ucladevx/BConnect-backend/middleware"
+	"github.com/ucladevx/BConnect-backend/services/users"
 	"github.com/ucladevx/BConnect-backend/storage/postgres"
 
 	"github.com/gorilla/handlers"
@@ -13,39 +16,48 @@ import (
 )
 
 func startServerAndServices(config Config) {
-	db := postgres.Connect(config.Storage.Host,
-		config.Storage.Username,
-		config.Storage.Name,
-		config.Storage.Password)
-
-	friendDB := postgres.Connect(config.Storage.Host,
-		config.Storage.Username,
-		config.Storage.Friends,
-		config.Storage.Password)
-
-	auth := postgres.NewPostgresClient(db)
-	userActions := postgres.NewUserActions(db, friendDB)
-
-	postgres.CreatePostgresTables(auth, userActions)
-
-	var userController = userauth.UserController{
-		Service: auth,
-		Actions: userActions,
+	var db *gorm.DB
+	_, ok := os.LookupEnv("DATABASE_URL")
+	if ok {
+		db = postgres.HerokuConnect("DATABASE_URL")
 	}
+	if !ok {
+		db = postgres.Connect(config.Storage.UserHost,
+			config.Storage.UserUsername,
+			config.Storage.Username,
+			config.Storage.UserPassword)
+	}
+
+
+	userStore := postgres.NewUserStorage(db)
+	friendStore := postgres.NewFriendStorage(db)
+	filters := postgres.NewFilterers(db)
+	emailStore := postgres.NewEmailStorage(db)
+
+	postgres.CreatePostgresTables(userStore, friendStore, emailStore)
+	userService := users.NewUserService(userStore, friendStore, emailStore)
+
+	userController := controllers.NewUserController(userService, filters)
 
 	r := mux.NewRouter()
 	http.Handle("/", r)
 	userController.Setup(r)
 	s := r.PathPrefix("/auth").Subrouter()
-	s.Use(bconnecthandlers.VerifyToken)
+	s.Use(middleware.VerifyToken)
 	userController.AuthSetup(s)
 
-	log.Printf("Listening on %s%s", config.Server.Host, config.Server.Port)
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		port = "8080"
+	}
 
-	log.Fatal(http.ListenAndServe(config.Server.Port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
+	log.Printf("Listening on %s:%s", config.Server.Host, port)
+	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "Access-Control-Allow-Origin"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(r)))
 }
 
 func main() {
 	conf := Conf()
 	startServerAndServices(conf)
+	
 }

@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/jinzhu/gorm"
+	// postgres gorm
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -17,6 +19,17 @@ func CreatePostgresTables(tables ...Table) {
 	for _, table := range tables {
 		table.create()
 	}
+}
+
+// HerokuConnect connects to heroku postgresql tables
+func HerokuConnect(dbEnv string) *gorm.DB {
+	db, err := gorm.Open("postgres", os.Getenv(dbEnv))
+	if err != nil {
+		print(err.Error())
+	}
+	//defer db.Close()
+	fmt.Println("Successfully connected!", db)
+	return db
 }
 
 // Connect connects to postgresql
