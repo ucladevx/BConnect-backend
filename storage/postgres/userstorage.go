@@ -151,3 +151,5 @@ func (us *UserStorage) GetFromID(uuid string) *models.User {
 func (us *UserStorage) Leave(currUUID string) {
 
 }
+
+

@@ -29,6 +29,7 @@ type RefreshClaims struct {
 
 // UserService abstract user-side functionality in case we switch from whatever current db scheme we are using
 type UserService interface {
+	//first set of parentheses is the input, second set of parens is the outputs
 	Login(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time)
 	Update(user *models.User) (map[string]interface{}, error)
 	Signup(email string, password string, firstName string, lastName string) (bool, error)
@@ -39,6 +40,9 @@ type UserService interface {
 	GetFriends(currUUID string) []models.Friends
 	Leave(currUUID string)
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User
+
+	AddEmail(email string) (bool, error)
+	
 }
 
 // Filterers abstracts filters
@@ -70,6 +74,7 @@ func (uc *UserController) Setup(r *mux.Router) {
 	r.HandleFunc("/login", uc.Login).Methods("POST")
 	r.HandleFunc("/signup", uc.Signup).Methods("POST")
 	r.HandleFunc("/refresh", uc.Refresh).Methods("GET")
+	r.HandleFunc("/email", uc.AddEmail).Methods("POST")
 }
 
 // AuthSetup sets up auth handlers
@@ -79,7 +84,7 @@ func (uc *UserController) AuthSetup(r *mux.Router) {
 	r.HandleFunc("/addfriend", uc.AddFriend).Methods("GET")
 	r.HandleFunc("/acceptfriend", uc.AcceptFriend).Methods("GET")
 	r.HandleFunc("/getfriends", uc.GetFriend).Methods("GET")
-	r.HandleFunc("/filter/{filterOne}", uc.Filter).Methods("GET")
+	r.HandleFunc("/filter", uc.Filter).Methods("GET")
 }
 
 // Login login users and provides authentication token for user
@@ -240,3 +245,37 @@ func (uc *UserController) getUUIDFromRefreshToken(w http.ResponseWriter, r *http
 	}
 	return refreshClaims
 }
+
+func (uc *UserController) AddEmail(w http.ResponseWriter, r *http.Request) {
+	var emailInfo models.Email
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&emailInfo)
+	
+	status, _ := uc.UserService.AddEmail(emailInfo.Email)
+	if status != true {
+		http.Error(w, "Error adding email", 500)
+		return
+	}
+
+	var resp = map[string]interface{}{"status": false, "message": "Email registered!", "email": emailInfo}
+	json.NewEncoder(w).Encode(resp)
+}
+
+
+/*func (uc *UserController) Email(w http.ResponseWriter, r *http.Request) {
+	var userInfo models.User
+	decoder := json.NewDecoder(r.Body)
+	decoder.Decode(&userInfo)
+	var resp = map[string]interface{}{"status": false, "user": userInfo}
+
+	status, _ := uc.UserService.Email(userInfo.Email)
+	if status != true {
+		http.Error(w, "Error signing up", 500)
+		return
+	}
+	print(resp["user"])
+	resp, token, _, _, _ := uc.UserService.Login(userInfo.Email, userInfo.Password)
+	if token != "" {
+		json.NewEncoder(w).Encode(resp)
+	}
+}*/ //contents are still copy pasted from the login portion, need to change to be email specific
