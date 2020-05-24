@@ -13,8 +13,8 @@ import (
 //UserStorage user store
 type UserStorage interface {
 	GetUser(username string, password string) (*models.User, string)
-	NewUser(user *models.User, interests []models.Interests) (bool, error)
-	ModifyUser(user *models.User) *models.User
+	NewUser(user *models.User) (bool, error)
+	ModifyUser(user *models.User, interests []models.Interests) *models.User
 	DeleteUser(username string, password string) (bool, error)
 	GetFromID(uuid string) *models.User
 	Leave(currUUID string)
@@ -122,22 +122,20 @@ func generateRandomBytes(n int) ([]byte, error) {
 }
 
 //Signup signs user in
-func (us *UserService) Signup(user *models.User, interestsList []string) (bool, error) {
-	var interests []models.Interests
+func (us *UserService) Signup(user *models.User) (bool, error) {
+	return us.userStore.NewUser(user)
+}
 
+//Update sets categories
+func (us *UserService) Update(user *models.User, interestsList []string) (map[string]interface{}, error) {
+	var resp = map[string]interface{}{"status": false, "message": "logged in"}
+	var interests []models.Interests
 	for _, interest := range interestsList {
 		interests = append(interests, models.Interests{
 			Interest: interest,
 		})
 	}
-
-	return us.userStore.NewUser(user, interests)
-}
-
-//Update sets categories
-func (us *UserService) Update(user *models.User) (map[string]interface{}, error) {
-	var resp = map[string]interface{}{"status": false, "message": "logged in"}
-	resp["mod_user"] = us.userStore.ModifyUser(user)
+	resp["mod_user"] = us.userStore.ModifyUser(user, interests)
 	return resp, nil
 }
 

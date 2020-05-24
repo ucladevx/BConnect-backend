@@ -36,8 +36,8 @@ type InterestsForm struct {
 type UserService interface {
 	//first set of parentheses is the input, second set of parens is the outputs
 	Login(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time)
-	Update(user *models.User) (map[string]interface{}, error)
-	Signup(user *models.User, interestsString []string) (bool, error)
+	Update(user *models.User, interestsString []string) (map[string]interface{}, error)
+	Signup(user *models.User) (bool, error)
 	DeleteUser(username string, password string) (bool, error)
 	RefreshToken(uuid string) (map[string]interface{}, string, time.Time)
 	FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
@@ -105,16 +105,14 @@ func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
 // Signup signs up users and provides auth token
 func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	var userInfo models.User
-	var interestsInfo InterestsForm
 
 	decoder := json.NewDecoder(r.Body)
 
 	decoder.Decode(&userInfo)
-	decoder.Decode(&interestsInfo)
 
 	var resp = map[string]interface{}{"status": false, "user": userInfo}
 
-	status, _ := uc.UserService.Signup(&userInfo, interestsInfo.Interests)
+	status, _ := uc.UserService.Signup(&userInfo)
 	if status != true {
 		http.Error(w, "Error signing up", 500)
 		return
@@ -128,13 +126,16 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 // Update changes users in DB
 func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
 	var userInfo models.User
+	var interestsInfo InterestsForm
 
 	decoder := json.NewDecoder(r.Body)
+
 	err := decoder.Decode(&userInfo)
+	decoder.Decode(&interestsInfo)
 	if err != nil {
 		print(err.Error)
 	}
-	resp, err := uc.UserService.Update(&userInfo)
+	resp, err := uc.UserService.Update(&userInfo, interestsInfo.Interests)
 	if err != nil {
 		print(err.Error)
 	}

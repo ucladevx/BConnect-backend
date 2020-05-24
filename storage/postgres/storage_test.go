@@ -29,12 +29,7 @@ func TestUserStore(t *testing.T) {
 		FirstName: testFirstName,
 		LastName:  testLastName,
 	}
-	testInterests := []models.Interests{
-		models.Interests{
-			Interest: "Diving",
-		},
-	}
-	status, err := userStore.NewUser(testUser, testInterests)
+	status, err := userStore.NewUser(testUser)
 	if err != nil {
 		t.Errorf("Error creating new user")
 	}
@@ -50,17 +45,23 @@ func TestUserStore(t *testing.T) {
 		t.Errorf("Error retrieving user")
 	}
 
-	interests := userStore.GetInterestsFromID(user.UserID)
-	if interests[0].Interest != "Diving" {
-		t.Errorf("Error retrieving interests")
-	}
-
 	moddedUser := models.User{
 		UserID:    user.UserID,
 		Email:     user.Email,
 		FirstName: "ModificationTest",
 	}
-	userStore.ModifyUser(&moddedUser)
+	testInterests := []models.Interests{
+		models.Interests{
+			Interest: "Diving",
+		},
+	}
+
+	userStore.ModifyUser(&moddedUser, testInterests)
+
+	interests := userStore.GetInterestsFromID(user.UserID)
+	if interests[0].Interest != "Diving" {
+		t.Errorf("Error retrieving interests")
+	}
 
 	user, strErr = userStore.GetUser(testEmail, testPassword)
 	if strErr != "" {
@@ -100,13 +101,8 @@ func TestFriendStore(t *testing.T) {
 		FirstName: testFirstName,
 		LastName:  testLastName,
 	}
-	testInterests := []models.Interests{
-		models.Interests{
-			Interest: "Running",
-		},
-	}
 
-	userStore.NewUser(testUser1, testInterests)
+	userStore.NewUser(testUser1)
 
 	user1, strErr1 := userStore.GetUser(testEmail, testPassword)
 	if strErr1 != "" {
@@ -124,12 +120,7 @@ func TestFriendStore(t *testing.T) {
 		FirstName: testFirstName2,
 		LastName:  testLastName2,
 	}
-	testInterests2 := []models.Interests{
-		models.Interests{
-			Interest: "Swimming",
-		},
-	}
-	userStore.NewUser(testUser2, testInterests2)
+	userStore.NewUser(testUser2)
 
 	user2, strErr2 := userStore.GetUser(testEmail2, testPassword2)
 	if strErr2 != "" {

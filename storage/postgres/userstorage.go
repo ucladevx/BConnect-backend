@@ -49,7 +49,7 @@ func (us *UserStorage) findUser(email, password string) (*models.User, string) {
 }
 
 // NewUser puts user into postgres
-func (us *UserStorage) NewUser(user *models.User, interests []models.Interests) (bool, error) {
+func (us *UserStorage) NewUser(user *models.User) (bool, error) {
 	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
@@ -63,16 +63,12 @@ func (us *UserStorage) NewUser(user *models.User, interests []models.Interests) 
 	if us.client.NewRecord(user) {
 		return false, nil
 	}
-	for _, interest := range interests {
-		interest.UserID = user.UserID
-		us.client.Create(&interest)
-	}
 
 	return true, nil
 }
 
 // ModifyUser sets updated fields
-func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
+func (us *UserStorage) ModifyUser(userModded *models.User, interests []models.Interests) *models.User {
 	var user models.User
 	if err := us.client.Where("EMAIL = ? AND USER_ID = ?", userModded.Email, userModded.UserID).Find(&user); err != nil {
 	}
@@ -130,6 +126,11 @@ func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
 	user.Lat = lat
 	user.Lon = lon
 	us.client.Save(&user)
+
+	for _, interest := range interests {
+		interest.UserID = user.UserID
+		us.client.Create(&interest)
+	}
 
 	if err := us.client.Where("EMAIL = ? AND USER_ID = ?", userModded.Email, userModded.UserID).Find(&user); err != nil {
 	}
