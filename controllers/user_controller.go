@@ -119,7 +119,6 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error signing up", 500)
 		return
 	}
-	print(resp["user"])
 	resp, token, _, _, _ := uc.UserService.Login(userInfo.Email, userInfo.Password)
 	if token != "" {
 		json.NewEncoder(w).Encode(resp)
@@ -147,7 +146,7 @@ func (uc *UserController) AddFriend(w http.ResponseWriter, r *http.Request) {
 	claims := uc.getCurrentUserFromTokenProvided(w, r)
 	friend, err := uc.UserService.FriendRequest(claims.UUID, r.URL.Query().Get("friend_uuid"), r.URL.Query().Get("message"))
 	if err != nil {
-		print("Hey")
+
 	}
 	var resp = map[string]interface{}{"added": true, "friend": friend}
 	json.NewEncoder(w).Encode(resp)
@@ -226,7 +225,7 @@ func (uc *UserController) Filter(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UserController) getCurrentUserFromTokenProvided(w http.ResponseWriter, r *http.Request) Claims {
-	header := strings.TrimSpace(r.Header.Get("x-access-token"))
+	header := strings.TrimSpace(r.Header.Get("Authorization"))
 
 	claims := Claims{}
 
@@ -241,7 +240,7 @@ func (uc *UserController) getCurrentUserFromTokenProvided(w http.ResponseWriter,
 }
 
 func (uc *UserController) getUUIDFromRefreshToken(w http.ResponseWriter, r *http.Request) RefreshClaims {
-	header := strings.TrimSpace(r.Header.Get("x-access-token"))
+	header := strings.TrimSpace(r.Header.Get("Authorization"))
 
 	refreshClaims := RefreshClaims{}
 

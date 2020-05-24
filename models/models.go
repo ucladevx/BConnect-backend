@@ -31,7 +31,7 @@ type User struct {
 	GradYear    string  `json:"gradyear"`
 	CurrentJob  string  `json:"currentjob"`
 	Gender      string  `json:"gender"`
-	Email       string  `json:"username"`
+	Email       string  `json:"username" gorm:"unique"`
 	Major       string  `json:"major"`
 	Password    string  `json:"password"`
 	PhoneNumber string  `json:"phonenumber"`
