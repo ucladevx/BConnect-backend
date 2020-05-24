@@ -49,16 +49,12 @@ func (us *UserStorage) findUser(email, password string) (*models.User, string) {
 }
 
 // NewUser puts user into postgres
-func (us *UserStorage) NewUser(email string, password string, firstname string, lastname string) (bool, error) {
-	pass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func (us *UserStorage) NewUser(user *models.User) (bool, error) {
+	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
 	}
-	user := &models.User{}
 	user.Password = string(pass)
-	user.Email = email
-	user.FirstName = firstname
-	user.LastName = lastname
 	user.UserID = uuid.UUID()
 	if !us.client.NewRecord(user) {
 		return false, nil
@@ -78,11 +74,12 @@ func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
 
 	fname := userModded.FirstName
 	lname := userModded.LastName
+	age := userModded.Age
+	currentJob := userModded.CurrentJob
+	gender := userModded.Gender
 	major := userModded.Major
 	gradYear := userModded.GradYear
-	interests := userModded.Interests
 	bio := userModded.Bio
-	clubs := userModded.Clubs
 	lat := userModded.Lat
 	lon := userModded.Lon
 
@@ -98,14 +95,17 @@ func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
 	if userModded.GradYear == "" {
 		gradYear = user.GradYear
 	}
-	if userModded.Interests == "" {
-		interests = user.Interests
-	}
 	if userModded.Bio == "" {
 		bio = user.Bio
 	}
-	if userModded.Clubs == "" {
-		bio = user.Clubs
+	if userModded.Gender == "" {
+		gender = user.Gender
+	}
+	if userModded.CurrentJob == "" {
+		currentJob = user.CurrentJob
+	}
+	if userModded.Age == 0 {
+		age = user.Age
 	}
 	if userModded.Lat == 0 {
 		lat = user.Lat
@@ -118,9 +118,10 @@ func (us *UserStorage) ModifyUser(userModded *models.User) *models.User {
 	user.LastName = lname
 	user.Major = major
 	user.GradYear = gradYear
-	user.Interests = interests
 	user.Bio = bio
-	user.Clubs = clubs
+	user.Age = age
+	user.Gender = gender
+	user.CurrentJob = currentJob
 	user.Lat = lat
 	user.Lon = lon
 	us.client.Save(&user)
@@ -151,5 +152,3 @@ func (us *UserStorage) GetFromID(uuid string) *models.User {
 func (us *UserStorage) Leave(currUUID string) {
 
 }
-
-

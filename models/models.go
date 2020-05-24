@@ -24,19 +24,20 @@ type UserLocation struct {
 // User user struct
 type User struct {
 	gorm.Model
-	FirstName   string  `json:"fname"`
-	LastName    string  `json:"lname"`
+	UserID      string  `json:"userid"`
+	FirstName   string  `json:"firstname"`
+	LastName    string  `json:"lastname"`
+	Age         int     `json:"age"`
+	GradYear    string  `json:"year"`
+	CurrentJob  string  `json:"currentjob"`
+	Gender      string  `json:"gender"`
 	Email       string  `json:"username"`
+	Major       string  `json:"degree"`
 	Password    string  `json:"password"`
 	PhoneNumber string  `json:"phonenumber"`
 	ProfilePic  string  `json:"profilepic"`
-	UserID      string  `json:"userid"`
-	Major       string  `json:"degree"`
-	GradYear    string  `json:"year"`
 	Lat         float64 `json:"lat"`
 	Lon         float64 `json:"lon"`
-	Interests   string  `json:"interests"`
-	Clubs       string  `json:"clubs"`
 	Bio         string  `json:"bio"`
 }
 
@@ -106,5 +107,5 @@ type Finder func(map[string]Filterer, map[string][]string) []User
 // Email is just an email
 type Email struct {
 	gorm.Model
-	Email       string  `json:"email"`
+	Email string `json:"email"`
 }
