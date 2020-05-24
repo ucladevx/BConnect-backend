@@ -24,8 +24,8 @@ type UserStorage interface {
 type FriendStorage interface {
 	AddFriend(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
 	AcceptFriend(currUUID string, friendUUID string) (*models.Friends, error)
-	GetFriends(currUUID string) map[string]interface{}
-	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{}
+	GetFriends(currUUID string) []models.Friends
+	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User
 }
 
 type EmailStorage interface {
@@ -122,6 +122,7 @@ func generateRandomBytes(n int) ([]byte, error) {
 
 //Signup signs user in
 func (us *UserService) Signup(email string, uuid string, firstname string, lastname string) (bool, error) {
+
 	return us.userStore.NewUser(email, uuid, firstname, lastname)
 }
 
@@ -173,23 +174,23 @@ func (us *UserService) RefreshToken(uuid string) (map[string]interface{}, string
 	return resp, tokenString, expiresAt
 }
 
-//FriendRequest add user recipe
+//FriendRequest adds friend
 func (us *UserService) FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error) {
 	return us.friendStore.AddFriend(currUUID, friendUUID, optionalMsg)
 }
 
-//AcceptFriendRequest removes user recipe
+//AcceptFriendRequest adds friend
 func (us *UserService) AcceptFriendRequest(currUUID string, friendUUID string) (*models.Friends, error) {
 	return us.friendStore.AcceptFriend(currUUID, friendUUID)
 }
 
-//GetFriends removes user recipe
-func (us *UserService) GetFriends(currUUID string) map[string]interface{} {
+//GetFriends gets friends
+func (us *UserService) GetFriends(currUUID string) []models.Friends {
 	return us.friendStore.GetFriends(currUUID)
 }
 
 //Filter filters
-func (us *UserService) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{} {
+func (us *UserService) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User {
 	return us.friendStore.Filter(finder, filters, args)
 }
 

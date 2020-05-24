@@ -140,7 +140,7 @@ func (us *UserStorage) DeleteUser(key string, password string) (bool, error) {
 //GetFromID gets user from uuid
 func (us *UserStorage) GetFromID(uuid string) *models.User {
 	user := &models.User{}
-	if err := us.client.Where("UUID = ?", uuid).First(user).Error; err != nil {
+	if err := us.client.Where("USER_ID = ?", uuid).First(user).Error; err != nil {
 		return nil
 	}
 

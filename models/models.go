@@ -101,7 +101,7 @@ type Interests struct {
 type Filterer func(*FilterReturn, []string) *FilterReturn
 
 // Finder finds
-type Finder func(map[string]Filterer, map[string][]string) map[string]interface{}
+type Finder func(map[string]Filterer, map[string][]string) []User
 
 // Email is just an email
 type Email struct {

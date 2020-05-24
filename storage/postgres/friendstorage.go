@@ -65,27 +65,15 @@ func (fs *FriendStorage) acceptRequest(currUUID string, friendUUID string) {
 }
 
 // GetFriends gets users friends
-func (fs *FriendStorage) GetFriends(currUUID string) map[string]interface{} {
+func (fs *FriendStorage) GetFriends(currUUID string) []models.Friends {
 	var friends []models.Friends
 	if err := fs.client.Where("USER_ID = ?", currUUID).Where("Status = ?", 1).Find(&friends); err != nil {
 
 	}
-	type FriendResponse struct {
-		FUUID        string
-		TimeAccepted int64
-	}
-	var fuuids []FriendResponse
-	var currFriendResponse FriendResponse
-	for _, friend := range friends {
-		currFriendResponse.FUUID = friend.FriendID
-		currFriendResponse.TimeAccepted = friend.TimeAccepted
-		fuuids = append(fuuids, currFriendResponse)
-	}
-	var resp = map[string]interface{}{"num_friends": len(friends), "friends": fuuids}
-	return resp
+	return friends
 }
 
 // Filter filters based on categories
-func (fs *FriendStorage) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) map[string]interface{} {
+func (fs *FriendStorage) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User {
 	return finder(filters, args)
 }
