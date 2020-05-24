@@ -13,7 +13,7 @@ import (
 //UserStorage user store
 type UserStorage interface {
 	GetUser(username string, password string) (*models.User, string)
-	NewUser(email string, uuid string, firstname string, lastname string) (bool, error)
+	NewUser(user *models.User) (bool, error)
 	ModifyUser(user *models.User) *models.User
 	DeleteUser(username string, password string) (bool, error)
 	GetFromID(uuid string) *models.User
@@ -28,6 +28,7 @@ type FriendStorage interface {
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User
 }
 
+//EmailStorage email store
 type EmailStorage interface {
 	AddEmail(email string) (bool, error)
 }
@@ -36,7 +37,7 @@ type EmailStorage interface {
 type UserService struct {
 	userStore   UserStorage
 	friendStore FriendStorage
-	emailStore EmailStorage
+	emailStore  EmailStorage
 }
 
 //NewUserService constructs new user service
@@ -121,9 +122,9 @@ func generateRandomBytes(n int) ([]byte, error) {
 }
 
 //Signup signs user in
-func (us *UserService) Signup(email string, uuid string, firstname string, lastname string) (bool, error) {
+func (us *UserService) Signup(user *models.User) (bool, error) {
 
-	return us.userStore.NewUser(email, uuid, firstname, lastname)
+	return us.userStore.NewUser(user)
 }
 
 //Update sets categories
@@ -194,6 +195,7 @@ func (us *UserService) Filter(finder models.Finder, filters map[string]models.Fi
 	return us.friendStore.Filter(finder, filters, args)
 }
 
+//AddEmail adds email to storage
 func (us *UserService) AddEmail(email string) (bool, error) {
 	return us.emailStore.AddEmail(email)
 }

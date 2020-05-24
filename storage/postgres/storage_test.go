@@ -22,7 +22,14 @@ func TestUserStore(t *testing.T) {
 	testPassword := "test_password"
 	testFirstName := "Test"
 	testLastName := "Test"
-	status, err := userStore.NewUser(testEmail, testPassword, testFirstName, testLastName)
+
+	testUser := &models.User{
+		Email:     testEmail,
+		Password:  testPassword,
+		FirstName: testFirstName,
+		LastName:  testLastName,
+	}
+	status, err := userStore.NewUser(testUser)
 	if err != nil {
 		t.Errorf("Error creating new user")
 	}
@@ -76,7 +83,14 @@ func TestFriendStore(t *testing.T) {
 	testPassword := "test_password"
 	testFirstName := "Test"
 	testLastName := "Test"
-	userStore.NewUser(testEmail, testPassword, testFirstName, testLastName)
+
+	testUser1 := &models.User{
+		Email:     testEmail,
+		Password:  testPassword,
+		FirstName: testFirstName,
+		LastName:  testLastName,
+	}
+	userStore.NewUser(testUser1)
 
 	user1, strErr1 := userStore.GetUser(testEmail, testPassword)
 	if strErr1 != "" {
@@ -87,7 +101,14 @@ func TestFriendStore(t *testing.T) {
 	testPassword2 := "test2_password"
 	testFirstName2 := "Test2"
 	testLastName2 := "Test2"
-	userStore.NewUser(testEmail2, testPassword2, testFirstName2, testLastName2)
+
+	testUser2 := &models.User{
+		Email:     testEmail2,
+		Password:  testPassword2,
+		FirstName: testFirstName2,
+		LastName:  testLastName2,
+	}
+	userStore.NewUser(testUser2)
 
 	user2, strErr2 := userStore.GetUser(testEmail2, testPassword2)
 	if strErr2 != "" {

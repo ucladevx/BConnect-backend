@@ -32,7 +32,7 @@ type UserService interface {
 	//first set of parentheses is the input, second set of parens is the outputs
 	Login(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time)
 	Update(user *models.User) (map[string]interface{}, error)
-	Signup(email string, password string, firstName string, lastName string) (bool, error)
+	Signup(user *models.User) (bool, error)
 	DeleteUser(username string, password string) (bool, error)
 	RefreshToken(uuid string) (map[string]interface{}, string, time.Time)
 	FriendRequest(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
@@ -42,7 +42,6 @@ type UserService interface {
 	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User
 
 	AddEmail(email string) (bool, error)
-	
 }
 
 // Filterers abstracts filters
@@ -105,7 +104,7 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 	decoder.Decode(&userInfo)
 	var resp = map[string]interface{}{"status": false, "user": userInfo}
 
-	status, _ := uc.UserService.Signup(userInfo.Email, userInfo.Password, userInfo.FirstName, userInfo.LastName)
+	status, _ := uc.UserService.Signup(&userInfo)
 	if status != true {
 		http.Error(w, "Error signing up", 500)
 		return
@@ -246,11 +245,12 @@ func (uc *UserController) getUUIDFromRefreshToken(w http.ResponseWriter, r *http
 	return refreshClaims
 }
 
+//AddEmail adds email
 func (uc *UserController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	var emailInfo models.Email
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&emailInfo)
-	
+
 	status, _ := uc.UserService.AddEmail(emailInfo.Email)
 	if status != true {
 		http.Error(w, "Error adding email", 500)
@@ -260,7 +260,6 @@ func (uc *UserController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	var resp = map[string]interface{}{"status": false, "message": "Email registered!", "email": emailInfo}
 	json.NewEncoder(w).Encode(resp)
 }
-
 
 /*func (uc *UserController) Email(w http.ResponseWriter, r *http.Request) {
 	var userInfo models.User
