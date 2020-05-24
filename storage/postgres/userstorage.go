@@ -54,13 +54,14 @@ func (us *UserStorage) NewUser(user *models.User) (bool, error) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	user.Password = string(pass)
-	user.UserID = uuid.UUID()
-	if !us.client.NewRecord(user) {
+	newUser := *user
+	newUser.Password = string(pass)
+	newUser.UserID = uuid.UUID()
+	if !us.client.NewRecord(newUser) {
 		return false, nil
 	}
-	us.client.Create(user)
-	if us.client.NewRecord(user) {
+	us.client.Create(&newUser)
+	if us.client.NewRecord(newUser) {
 		return false, nil
 	}
 

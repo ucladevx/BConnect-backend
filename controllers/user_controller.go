@@ -117,6 +117,7 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error signing up", 500)
 		return
 	}
+	print(userInfo.Password)
 	resp, token, _, _, _ := uc.UserService.Login(userInfo.Email, userInfo.Password)
 	if token != "" {
 		json.NewEncoder(w).Encode(resp)
