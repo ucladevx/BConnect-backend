@@ -24,7 +24,7 @@ func NewUserStorage(client *gorm.DB) *UserStorage {
 
 func (us *UserStorage) create() {
 	/* TODO: Maybe change migration model to maybe define DB relationships */
-	us.client.AutoMigrate(&models.User{})
+	us.client.AutoMigrate(&models.User{}, &models.Interests{})
 }
 
 // GetUser gets user for login
@@ -49,7 +49,7 @@ func (us *UserStorage) findUser(email, password string) (*models.User, string) {
 }
 
 // NewUser puts user into postgres
-func (us *UserStorage) NewUser(user *models.User) (bool, error) {
+func (us *UserStorage) NewUser(user *models.User, interests []models.Interests) (bool, error) {
 	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
@@ -63,6 +63,11 @@ func (us *UserStorage) NewUser(user *models.User) (bool, error) {
 	if us.client.NewRecord(user) {
 		return false, nil
 	}
+	for _, interest := range interests {
+		interest.UserID = user.UserID
+		us.client.Create(&interest)
+	}
+
 	return true, nil
 }
 
@@ -146,6 +151,16 @@ func (us *UserStorage) GetFromID(uuid string) *models.User {
 	}
 
 	return user
+}
+
+//GetInterestsFromID gets interests
+func (us *UserStorage) GetInterestsFromID(uuid string) []models.Interests {
+	interests := []models.Interests{}
+	if err := us.client.Where("USER_ID = ?", uuid).First(&interests).Error; err != nil {
+		return nil
+	}
+
+	return interests
 }
 
 // Leave dummy function for logs users out

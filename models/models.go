@@ -95,7 +95,7 @@ type Message struct {
 // Interests interests
 type Interests struct {
 	UserID   string `json:"userid"`
-	Interest string `json:"interest"`
+	Interest string `json:"interests"`
 }
 
 // Filterer filters

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -13,7 +14,7 @@ import (
 //UserStorage user store
 type UserStorage interface {
 	GetUser(username string, password string) (*models.User, string)
-	NewUser(user *models.User) (bool, error)
+	NewUser(user *models.User, interests []models.Interests) (bool, error)
 	ModifyUser(user *models.User) *models.User
 	DeleteUser(username string, password string) (bool, error)
 	GetFromID(uuid string) *models.User
@@ -122,9 +123,17 @@ func generateRandomBytes(n int) ([]byte, error) {
 }
 
 //Signup signs user in
-func (us *UserService) Signup(user *models.User) (bool, error) {
+func (us *UserService) Signup(user *models.User, interestsString string) (bool, error) {
+	interestsList := strings.Split(interestsString, ",")
+	var interests []models.Interests
 
-	return us.userStore.NewUser(user)
+	for _, interest := range interestsList {
+		interests = append(interests, models.Interests{
+			Interest: interest,
+		})
+	}
+
+	return us.userStore.NewUser(user, interests)
 }
 
 //Update sets categories
