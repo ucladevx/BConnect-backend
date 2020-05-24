@@ -28,11 +28,11 @@ type User struct {
 	FirstName   string  `json:"firstname"`
 	LastName    string  `json:"lastname"`
 	Age         int     `json:"age"`
-	GradYear    string  `json:"year"`
+	GradYear    string  `json:"gradyear"`
 	CurrentJob  string  `json:"currentjob"`
 	Gender      string  `json:"gender"`
 	Email       string  `json:"username"`
-	Major       string  `json:"degree"`
+	Major       string  `json:"major"`
 	Password    string  `json:"password"`
 	PhoneNumber string  `json:"phonenumber"`
 	ProfilePic  string  `json:"profilepic"`
@@ -95,7 +95,7 @@ type Message struct {
 // Interests interests
 type Interests struct {
 	UserID   string `json:"userid"`
-	Interest string `json:"interest"`
+	Interest string `json:"interests"`
 }
 
 // Filterer filters
