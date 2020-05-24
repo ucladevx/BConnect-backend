@@ -39,9 +39,16 @@ func startServerAndServices(config Config) {
 	userController := controllers.NewUserController(userService, filters)
 
 	r := mux.NewRouter()
+	CORSMWR := mux.CORSMethodMiddleware(r)
+	r.Use(CORSMWR)
+
 	http.Handle("/", r)
 	userController.Setup(r)
+
 	s := r.PathPrefix("/auth").Subrouter()
+	CORSMWS := mux.CORSMethodMiddleware(s)
+	s.Use(CORSMWS)
+
 	s.Use(middleware.VerifyToken)
 	userController.AuthSetup(s)
 
