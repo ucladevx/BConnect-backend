@@ -129,9 +129,14 @@ func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
 	var userInfo models.User
 	var interestsInfo InterestsForm
 
+	claim := uc.getCurrentUserFromTokenProvided(w, r)
+
 	decoder := json.NewDecoder(r.Body)
 
 	err := decoder.Decode(&userInfo)
+	userInfo.UserID = claim.UUID
+	userInfo.Email = claim.Email
+
 	decoder.Decode(&interestsInfo)
 	if err != nil {
 		print(err.Error)

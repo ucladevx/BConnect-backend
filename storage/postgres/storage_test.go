@@ -70,6 +70,9 @@ func TestUserStore(t *testing.T) {
 	if user.FirstName != "ModificationTest" {
 		t.Errorf("Error modifying user")
 	}
+	if user.LastName != "Test" {
+		t.Errorf("Error modifying user")
+	}
 
 	currUUID := user.UserID
 	uuidUser := userStore.GetFromID(currUUID)

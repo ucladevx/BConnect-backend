@@ -77,17 +77,14 @@ type RefreshToken struct {
 	StandardClaims *jwt.StandardClaims
 }
 
-// Chats chats
-type Chats struct {
-}
-
 //ChatRooms user specific chat rooms
 type ChatRooms struct {
+	ChatRoomID string `json:"chatroomid"`
 }
 
 // Message message object
 type Message struct {
-	Sender   string `json:"sender"`
+	SenderID string `json:"senderid"`
 	Username string `json:"username"`
 	Message  string `json:"message"`
 }
