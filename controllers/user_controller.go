@@ -29,7 +29,7 @@ type RefreshClaims struct {
 
 //InterestsForm interests
 type InterestsForm struct {
-	Interests []string `json:"interests"`
+	Interests string `json:"interests"`
 }
 
 // UserService abstract user-side functionality in case we switch from whatever current db scheme we are using
@@ -117,7 +117,6 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error signing up", 500)
 		return
 	}
-	print(userInfo.Password)
 	resp, token, _, _, _ := uc.UserService.Login(userInfo.Email, userInfo.Password)
 	if token != "" {
 		json.NewEncoder(w).Encode(resp)
@@ -126,24 +125,21 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 
 // Update changes users in DB
 func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
-	var userInfo models.User
-	var interestsInfo InterestsForm
+	var formData models.ChangeData
 
 	claim := uc.getCurrentUserFromTokenProvided(w, r)
 
 	decoder := json.NewDecoder(r.Body)
 
-	err := decoder.Decode(&userInfo)
+	decoder.Decode(&formData)
+	userInfo, interests := formData.SplitIntoUserAndInterests()
+
 	userInfo.UserID = claim.UUID
 	userInfo.Email = claim.Email
 
-	decoder.Decode(&interestsInfo)
+	resp, err := uc.UserService.Update(userInfo, interests)
 	if err != nil {
-		print(err.Error)
-	}
-	resp, err := uc.UserService.Update(&userInfo, interestsInfo.Interests)
-	if err != nil {
-		print(err.Error)
+		print(err.Error())
 	}
 	json.NewEncoder(w).Encode(resp)
 }

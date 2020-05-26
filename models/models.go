@@ -21,6 +21,48 @@ type UserLocation struct {
 	UserLocation Location `json:"location"`
 }
 
+// ChangeData ChangeData struct
+type ChangeData struct {
+	gorm.Model
+	FirstName   string   `json:"firstname"`
+	LastName    string   `json:"lastname"`
+	Age         int      `json:"age"`
+	GradYear    string   `json:"gradyear"`
+	CurrentJob  string   `json:"currentjob"`
+	Gender      string   `json:"gender"`
+	Email       string   `json:"username" gorm:"unique"`
+	Major       string   `json:"major"`
+	Password    string   `json:"password"`
+	PhoneNumber string   `json:"phonenumber"`
+	ProfilePic  string   `json:"profilepic"`
+	Lat         float64  `json:"lat"`
+	Lon         float64  `json:"lon"`
+	Bio         string   `json:"bio"`
+	Interests   []string `json:"interests"`
+}
+
+//SplitIntoUserAndInterests splits
+func (cd *ChangeData) SplitIntoUserAndInterests() (*User, []string) {
+	user := &User{
+		FirstName:   cd.FirstName,
+		LastName:    cd.LastName,
+		Age:         cd.Age,
+		GradYear:    cd.GradYear,
+		CurrentJob:  cd.CurrentJob,
+		Gender:      cd.Gender,
+		Email:       cd.Email,
+		Major:       cd.Major,
+		Password:    cd.Password,
+		PhoneNumber: cd.PhoneNumber,
+		ProfilePic:  cd.ProfilePic,
+		Lat:         cd.Lat,
+		Lon:         cd.Lon,
+		Bio:         cd.Bio,
+	}
+
+	return user, cd.Interests
+}
+
 // User user struct
 type User struct {
 	gorm.Model

@@ -84,6 +84,9 @@ func (us *UserStorage) ModifyUser(userModded *models.User, interests []models.In
 	bio := userModded.Bio
 	lat := userModded.Lat
 	lon := userModded.Lon
+	phoneNumber := userModded.PhoneNumber
+	profilePic := userModded.ProfilePic
+	password := userModded.Password
 
 	if userModded.FirstName == "" {
 		fname = user.FirstName
@@ -115,6 +118,15 @@ func (us *UserStorage) ModifyUser(userModded *models.User, interests []models.In
 	if userModded.Lon == 0 {
 		lon = user.Lon
 	}
+	if userModded.PhoneNumber == "" {
+		phoneNumber = user.PhoneNumber
+	}
+	if userModded.Password == "" {
+		password = user.Password
+	}
+	if userModded.ProfilePic == "" {
+		profilePic = user.ProfilePic
+	}
 
 	user.FirstName = fname
 	user.LastName = lname
@@ -126,6 +138,9 @@ func (us *UserStorage) ModifyUser(userModded *models.User, interests []models.In
 	user.CurrentJob = currentJob
 	user.Lat = lat
 	user.Lon = lon
+	user.PhoneNumber = phoneNumber
+	user.Password = password
+	user.ProfilePic = profilePic
 	us.client.Save(&user)
 
 	for _, interest := range interests {
