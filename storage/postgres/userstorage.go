@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	//"errors"
 	"fmt"
 	"github.com/ucladevx/BConnect-backend/models"
 	"github.com/ucladevx/BConnect-backend/utils/uuid"
@@ -49,24 +48,22 @@ func (us *UserStorage) findUser(email, password string) (*models.User, error) {
 }
 
 // NewUser puts user into postgres
-func (us *UserStorage) NewUser(email string, password string, firstname string, lastname string) (bool, error) {
-	pass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func (us *UserStorage) NewUser(user *models.User) (bool, error) {
+	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
 	}
-	user := &models.User{}
-	user.Password = string(pass)
-	user.Email = email
-	user.FirstName = firstname
-	user.LastName = lastname
-	user.UserID = uuid.UUID()
-	if !us.client.NewRecord(user) {
+	newUser := *user
+	newUser.Password = string(pass)
+	newUser.UserID = uuid.UUID()
+	if !us.client.NewRecord(newUser) {
 		return false, nil
 	}
-	us.client.Create(user)
-	if us.client.NewRecord(user) {
+	us.client.Create(&newUser)
+	if us.client.NewRecord(newUser) {
 		return false, nil
 	}
+
 	return true, nil
 }
 
@@ -152,7 +149,8 @@ func (us *UserStorage) AddInterest(userID string, interestString string) (*model
 		return nil, res.Error
 	}
 
-	us.client.Model(&user).Association("Interests").Append(interestStruct)
+	interest := &models.Interest{Interest: interestString}
+	us.client.Model(&user).Association("Interests").Append([]*models.Interest{interest})
 	return &user, nil
 }
 
@@ -167,7 +165,7 @@ func (us *UserStorage) AddClub(userID string, clubString string) (*models.User, 
 		return nil, res.Error
 	}
 
-	us.client.Model(&user).Association("Interests").Append(clubStruct)
+	us.client.Model(&user).Association("user_clubs").Append(clubStruct)
 	return &user, nil
 }
 
@@ -181,7 +179,7 @@ func (us *UserStorage) GetInterests(userID string) (map[string]interface{}, erro
 	numInterests := us.client.Model(&user).Association("Interests").Count()
 	interests := make([]*models.Interest, numInterests)
 	interestList := make([]string, numInterests)
-	us.client.Model(&user).Association("Interests").Find(&interests)
+	us.client.Model(&user).Related(&interests, "Interests")
 
 	for _, val := range interests {
 		interestList = append(interestList, val.Interest)

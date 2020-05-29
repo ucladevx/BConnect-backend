@@ -13,7 +13,7 @@ import (
 //UserStorage user store
 type UserStorage interface {
 	GetUser(username string, password string) (*models.User, error)
-	NewUser(email string, uuid string, firstname string, lastname string) (bool, error)
+	NewUser(user *models.User) (bool, error)
 	ModifyUser(user *models.User) (*models.User, error)
 	AddFriend(userID string, friend string, msg string) (*models.User, error)
 	AddInterest(userID string, interestString string) (*models.User, error)
@@ -113,7 +113,7 @@ func generateRandomBytes(n int) ([]byte, error) {
 
 //Signup signs user in
 func (us *UserService) Signup(email string, uuid string, firstname string, lastname string) (bool, error) {
-	return us.userStore.NewUser(email, uuid, firstname, lastname)
+	return true, nil
 }
 
 //Update sets categories
