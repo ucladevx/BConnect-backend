@@ -3,6 +3,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/ucladevx/BConnect-backend/storage/postgres"
 	"testing"
+	"fmt"
 
 	"github.com/ucladevx/BConnect-backend/models"
 )
@@ -155,20 +156,20 @@ func TestInterestStore (t *testing.T) {
 		UserID: "1234",
 	}
 
-	interest, err := intStore.NewInterest("Eating")
+	interest, err := intStore.NewInterestFromString("Eating")
 	if err != nil {
-		t.Error(err, "error creating new interest")
+		t.Error(err, "error creating new interest from string")
 	}
-	if interest != nil && interest.Interest != "Eating" {
-		t.Error("newinterest: interest does not match")
+	if interest == nil || interest.Interest != "Eating" {
+		t.Error("newinterestfromstring: interest does not match")
 	}
 
-	interest, err = intStore.GetInterestFromString("Eating")
+	interest, err = intStore.NewInterest(testInterest1)
 	if err != nil {
-		t.Error("error getting interest from string")
+		t.Error("error creating new interest")
 	}
-	if interest != nil && interest.Interest != "Eating" {
-		t.Error("getinterestfromstring: interest does not match")
+	if interest == nil || !compareInterests(interest, testInterest1) {
+		t.Error("newinterest: interest does not match")
 	}
 
 	interest, err = intStore.AddUser(testInterest1, testUser)
@@ -183,6 +184,28 @@ func TestInterestStore (t *testing.T) {
 	for _, val := range users {
 		if !compareUsers(val, testUser) {
 			t.Error("getusers: users do not match")
+		}
+	}
+
+	interest, err = intStore.GetInterestFromString("Eating")
+	if err != nil {
+		t.Error("error getting interest from string")
+	}
+	if interest != nil && interest.Interest != "Eating" {
+		t.Error("getinterestfromstring: interest does not match")
+	}
+
+	interests, err := intStore.GetAllInterests()
+	if err != nil {
+		t.Error("error getting all interests")
+	}
+	if len(interests) != 2 {
+		fmt.Print("num interests: ", len(interests))
+		t.Error("getallinterests: wrong number of interests")
+	}
+	for _, val := range interests {
+		if !(compareInterests(val, testInterest1) || compareInterests(val, interest)) {
+			t.Error("getallinterests: interests do not match")
 		}
 	}
 

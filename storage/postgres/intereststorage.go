@@ -21,7 +21,7 @@ func (intStore *InterestStorage) create() {
 	intStore.client.AutoMigrate(&models.Interest{})
 }
 
-func (intStore *InterestStorage) NewInterest(interestStr string) (*models.Interest, error) {
+func (intStore *InterestStorage) NewInterestFromString(interestStr string) (*models.Interest, error) {
 	interest := models.Interest{
 		Interest: interestStr,
 	}
@@ -29,6 +29,15 @@ func (intStore *InterestStorage) NewInterest(interestStr string) (*models.Intere
 	if !intStore.client.NewRecord(interest) {
 		intStore.client.Create(&interest)
 		return &interest, nil
+	}
+
+	return nil, errors.New("interest already exists")
+}
+
+func (intStore InterestStorage) NewInterest(interest *models.Interest) (*models.Interest, error) {
+	if !intStore.client.NewRecord(interest) {
+		intStore.client.Create(interest)
+		return interest, nil
 	}
 
 	return nil, errors.New("interest already exists")
