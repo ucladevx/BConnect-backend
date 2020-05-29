@@ -21,20 +21,20 @@ func (intStore *InterestStorage) create() {
 	intStore.client.AutoMigrate(&models.Interest{})
 }
 
-func (intStore *InterestStorage) NewInterest(interestStr string) error {
+func (intStore *InterestStorage) NewInterest(interestStr string) (*models.Interest, error) {
 	interest := models.Interest{
 		Interest: interestStr,
 	}
 
-	if intStore.client.NewRecord(interest) {
+	if !intStore.client.NewRecord(interest) {
 		intStore.client.Create(&interest)
-		return nil
+		return &interest, nil
 	}
 
-	return errors.New("interest already exists")
+	return nil, errors.New("interest already exists")
 }
 
-func (intStore *InterestStorage) GetInterest(interestStr string) (*models.Interest, error) {
+func (intStore *InterestStorage) GetInterestFromString(interestStr string) (*models.Interest, error) {
 	var interest models.Interest
 
 	if res := intStore.client.Where(&models.Interest{Interest: interestStr}).First(&interest); res.Error != nil {
@@ -44,34 +44,32 @@ func (intStore *InterestStorage) GetInterest(interestStr string) (*models.Intere
 	return &interest, nil
 }
 
-func (intStore *InterestStorage) AddUser(interestStr string, user *models.User) (*models.Interest, error) {
-	interest, err := intStore.GetInterest(interestStr)
-	if err != nil {
-		return nil, err
+func (intStore *InterestStorage) GetAllInterests() ([]*models.Interest, error) {
+	var interests []*models.Interest
+
+	if res := intStore.client.Find(&interests); res.Error != nil {
+		return nil, res.Error
 	}
 
-	intStore.client.Model(interest).Association("Users").Append(*user)
+	return interests, nil
+}
+
+func (intStore *InterestStorage) AddUser(interest *models.Interest, user *models.User) (*models.Interest, error) {
+	if res := intStore.client.Model(interest).Association("Users").Append(*user); res.Error != nil {
+		return nil, res.Error
+	}
+
 	return interest, nil
 }
 
-func (intStore *InterestStorage) GetUsers(interestStr string) (map[string]interface{}, error) {
-	interest, err := intStore.GetInterest(interestStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (intStore *InterestStorage) GetUsers(interest *models.Interest) ([]*models.User, error) {
 	numUsers := intStore.client.Model(interest).Association("Users").Count()
 	users := make([]*models.User, numUsers)
-	userList := make([]string, numUsers)
-	intStore.client.Model(interest).Association("Users").Find(&users)
 
-	for _, val := range users {
-		userList = append(userList, val.UserID)
+	if res := intStore.client.Model(interest).Association("Users").Find(&users); res.Error != nil {
+		return nil, res.Error
 	}
 
-	return map[string]interface{}{"num_users": numUsers, "users": userList}, nil
+	return users, nil
 }
 
-func (intStore *InterestStorage) ListInterests() (map[string]interface{}, error) {
-	
-}

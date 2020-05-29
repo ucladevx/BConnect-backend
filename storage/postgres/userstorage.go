@@ -123,119 +123,42 @@ func (us *UserStorage) ModifyUser(userModded *models.User) (*models.User, error)
 	return &user, nil
 }
 
-func (us *UserStorage) AddFriend(userID string, friendID string, msg string) (*models.User, error) {
-	var user models.User
-	var friend models.User
-
-	if res := us.client.Where(&models.User{UserID: userID}).First(&user); res.Error != nil {
-		return nil, res.Error
-	}
-	if res := us.client.Where(&models.User{UserID: friendID}).First(&friend); res.Error != nil {
+func (us *UserStorage) AddFriend(user *models.User, friend *models.User, msg string) (*models.User, error) {
+	if res := us.client.Model(user).Association("Friends").Append(friend); res.Error != nil {
 		return nil, res.Error
 	}
 
-	us.client.Model(&user).Association("Friends").Append(friend)
-	return &user, nil
+	return user, nil
 }
 
-func (us *UserStorage) AddInterest(userID string, interestString string) (*models.User, error) {
-	var user models.User
-	var interestStruct models.Interest
-
-	if res := us.client.Where(&models.User{UserID: userID}).First(&user); res.Error != nil {
-		return nil, res.Error
-	}
-	if res := us.client.Where(&models.Interest{Interest: interestString}).First(&interestStruct); res.Error != nil {
+func (us *UserStorage) AddInterest(user *models.User, interest *models.Interest) (*models.User, error) {
+	if res := us.client.Model(user).Association("Interests").Append(interest); res.Error != nil {
 		return nil, res.Error
 	}
 
-	interest := &models.Interest{Interest: interestString}
-	us.client.Model(&user).Association("Interests").Append([]*models.Interest{interest})
-	return &user, nil
+	return user, nil
 }
 
-func (us *UserStorage) AddClub(userID string, clubString string) (*models.User, error){
-	var user models.User
-	var clubStruct models.Club
-
-	if res := us.client.Where(&models.User{UserID: userID}).First(&user); res.Error != nil {
-		return nil, res.Error
-	}
-	if res := us.client.Where(&models.Club{Club: clubString}).First(&clubStruct); res.Error != nil {
-		return nil, res.Error
-	}
-
-	us.client.Model(&user).Association("user_clubs").Append(clubStruct)
-	return &user, nil
-}
-
-func (us *UserStorage) GetInterests(userID string) (map[string]interface{}, error) {
-	var user models.User
-
-	if res := us.client.Where(&models.User{UserID: userID}).First(&user); res.Error != nil {
-		return nil, res.Error
-	}
-
-	numInterests := us.client.Model(&user).Association("Interests").Count()
-	interests := make([]*models.Interest, numInterests)
-	interestList := make([]string, numInterests)
-	us.client.Model(&user).Related(&interests, "Interests")
-
-	for _, val := range interests {
-		interestList = append(interestList, val.Interest)
-	}
-
-	return map[string]interface{}{"num_interests": numInterests, "interests": interestList}, nil
-}
-
-func (us *UserStorage) GetClubs(userID string) (map[string]interface{}, error) {
-	var user models.User
-
-	if res := us.client.Where(&models.User{UserID: userID}).First(&user); res.Error != nil {
-		return nil, res.Error
-	}
-
-	numClubs := us.client.Model(&user).Association("Clubs").Count()
-	clubs := make([]*models.Club, numClubs)
-	clubList := make([]string, numClubs)
-	us.client.Model(&user).Association("Clubs").Find(&clubs)
-
-	for _, val := range clubs {
-		clubList = append(clubList, val.Club)
-	}
-
-	return map[string]interface{}{"num_clubs": numClubs, "clubs": clubList}, nil
-}
-
-func (us *UserStorage) GetFriends(userID string) (map[string]interface{}, error) {
-	var user models.User
-
-	if res := us.client.Where(&models.User{UserID: userID}).First(&user); res.Error != nil {
-		return nil, res.Error
-	}
-
-	numFriends := us.client.Model(&user).Association("Friends").Count()
+func (us *UserStorage) GetFriends(user *models.User) ([]*models.User, error) {
+	numFriends := us.client.Model(user).Association("Friends").Count()
 	friends := make([]*models.User, numFriends)
-	us.client.Model(&user).Association("Friends").Find(&friends)
 
-	type friend struct {
-		ID string
-		FirstName string
-		LastName string
-		GradYear string
+	if res := us.client.Model(user).Association("Friends").Find(&friends); res.Error != nil {
+		return nil, res.Error
 	}
 
-	friendList := make([]friend, numFriends)
-	for _, val := range friends {
-		friendList = append(friendList, friend{
-			ID: val.UserID,
-			FirstName: val.FirstName,
-			LastName: val.LastName,
-			GradYear: val.GradYear,
-		})
+	return friends, nil
+}
+
+func (us *UserStorage) GetInterests(user *models.User) ([]*models.Interest, error) {
+	numInterests := us.client.Model(user).Association("Interests").Count()
+	interests := make([]*models.Interest, numInterests)
+
+	if res := us.client.Model(user).Association("Interests").Find(&interests); res.Error != nil {
+		return nil, res.Error
 	}
 
-	return map[string]interface{}{"num_friends": numFriends, "friends": friendList}, nil
+	return interests, nil
 }
 
 // DeleteUser dels clients
@@ -247,7 +170,7 @@ func (us *UserStorage) DeleteUser(key string, password string) (bool, error) {
 //GetFromID gets user from uuid
 func (us *UserStorage) GetFromID(uuid string) (*models.User, error){
 	user := &models.User{}
-	if res := us.client.Where("UUID = ?", uuid).First(user); res.Error != nil {
+	if res := us.client.Where("UserID = ?", uuid).First(user); res.Error != nil {
 		return nil, res.Error
 	}
 
