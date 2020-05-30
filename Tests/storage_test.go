@@ -8,7 +8,7 @@ import (
 	"github.com/ucladevx/BConnect-backend/models"
 )
 
-func initTestDB() (*gorm.DB, *postgres.UserStorage, *postgres.InterestStorage) {
+func initTestDB() (*gorm.DB, *postgres.UserStorage, *postgres.InterestStorage, *postgres.ClubStorage) {
 	testDB := postgres.Connect("localhost",
 		"postgres",
 		"connect_b_test",
@@ -16,10 +16,11 @@ func initTestDB() (*gorm.DB, *postgres.UserStorage, *postgres.InterestStorage) {
 
 	userStore := postgres.NewUserStorage(testDB)
 	intStore := postgres.NewInterestStorage(testDB)
+	clubStore := postgres.NewClubStorage(testDB)
 
-	postgres.CreatePostgresTables(userStore, intStore)
+	postgres.CreatePostgresTables(userStore, intStore, clubStore)
 
-	return testDB, userStore, intStore
+	return testDB, userStore, intStore, clubStore
 }
 
 func cleanup(testDB *gorm.DB) {
@@ -35,6 +36,14 @@ func compareInterests(interest1 *models.Interest, interest2 *models.Interest) bo
 	return interest1.Interest == interest2.Interest
 }
 
+func compareClubs(club1 *models.Club, club2 *models.Club) bool {
+	if club1 == nil || club2 == nil {
+		return false
+	}
+
+	return club1.Club == club2.Club
+}
+
 func compareUsers(user1 *models.User, user2 *models.User) bool {
 	if user1 == nil || user2 == nil {
 		return false
@@ -45,7 +54,7 @@ func compareUsers(user1 *models.User, user2 *models.User) bool {
 
 //UserStoreTest Tests
 func TestUserStore(t *testing.T) {
-	testDB, userStore, _ := initTestDB()
+	testDB, userStore, _, _ := initTestDB()
 
 	if !testDB.HasTable(&models.User{}) {
 		t.Errorf("Table `user` not created")
@@ -142,7 +151,7 @@ func TestUserStore(t *testing.T) {
 }
 
 func TestInterestStore (t *testing.T) {
-	testDB, _, intStore := initTestDB()
+	testDB, _, intStore, _ := initTestDB()
 
 	testInterest1 := &models.Interest{
 		Interest: "Being annoyed by Go syntax",
@@ -212,3 +221,73 @@ func TestInterestStore (t *testing.T) {
 	cleanup(testDB)
 }
 
+func TestClubStore (t *testing.T) {
+	testDB, _, _, clubStore := initTestDB()
+
+	testClub1 := &models.Club{
+		Club: "Being annoyed by Go syntax",
+	}
+
+	testUser := &models.User{
+		Email:     "bob@bob.com",
+		Password:  "thisisapassword",
+		FirstName: "Bob",
+		LastName:  "Bob",
+		UserID: "1234",
+	}
+
+	club, err := clubStore.NewClubFromString("Eating")
+	if err != nil {
+		t.Error(err, "error creating new club from string")
+	}
+	if club == nil || club.Club != "Eating" {
+		t.Error("newclubfromstring: club does not match")
+	}
+
+	club, err = clubStore.NewClub(testClub1)
+	if err != nil {
+		t.Error("error creating new club")
+	}
+	if club == nil || !compareClubs(club, testClub1) {
+		t.Error("newclub: club does not match")
+	}
+
+	club, err = clubStore.AddUser(testClub1, testUser)
+	if err != nil {
+		t.Error("error adding user")
+	}
+
+	users, err := clubStore.GetUsers(testClub1)
+	if err != nil {
+		t.Error("error getting users")
+	}
+	for _, val := range users {
+		if !compareUsers(val, testUser) {
+			t.Error("getusers: users do not match")
+		}
+	}
+
+	club, err = clubStore.GetClubFromString("Eating")
+	if err != nil {
+		t.Error("error getting club from string")
+	}
+	if club != nil && club.Club != "Eating" {
+		t.Error("getclubfromstring: club does not match")
+	}
+
+	clubs, err := clubStore.GetAllClubs()
+	if err != nil {
+		t.Error("error getting all clubs")
+	}
+	if len(clubs) != 2 {
+		fmt.Print("num clubs: ", len(clubs))
+		t.Error("getallclubs: wrong number of clubs")
+	}
+	for _, val := range clubs {
+		if !(compareClubs(val, testClub1) || compareClubs(val, club)) {
+			t.Error("getallclubs: clubs do not match")
+		}
+	}
+
+	cleanup(testDB)
+}
