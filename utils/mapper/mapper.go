@@ -4,7 +4,6 @@ import (
 	//"strconv"
 
 	"github.com/ucladevx/BConnect-backend/models"
-	"strconv"
 )
 
 func UsersToMap(users []*models.User) map[string]interface{} {
