@@ -81,4 +81,3 @@ func (clubStore *ClubStorage) GetUsers(club *models.Club) ([]*models.User, error
 
 	return users, nil
 }
-

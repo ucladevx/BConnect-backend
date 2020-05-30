@@ -168,7 +168,7 @@ func (us *UserStorage) DeleteUser(key string, password string) (bool, error) {
 }
 
 //GetFromID gets user from uuid
-func (us *UserStorage) GetFromID(uuid string) (*models.User, error){
+func (us *UserStorage) GetFromID(uuid string) (*models.User, error) {
 	user := &models.User{}
 	if res := us.client.Where("UserID = ?", uuid).First(user); res.Error != nil {
 		return nil, res.Error

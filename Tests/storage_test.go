@@ -1,9 +1,10 @@
 package Tests
+
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/ucladevx/BConnect-backend/storage/postgres"
 	"testing"
-	"fmt"
 
 	"github.com/ucladevx/BConnect-backend/models"
 )
@@ -78,18 +79,18 @@ func TestUserStore(t *testing.T) {
 		Password:  testPassword,
 		FirstName: testFirstName,
 		LastName:  testLastName,
-		UserID: "1234",
+		UserID:    "1234",
 		Interests: []*models.Interest{
 			testInterest1,
 		},
 	}
 
 	testFriend := &models.User{
-		Email: "bob@bob.com",
-		Password: "securepassword",
+		Email:     "bob@bob.com",
+		Password:  "securepassword",
 		FirstName: "Bob",
-		LastName: "Bob",
-		UserID: "BobSpelledBackwards",
+		LastName:  "Bob",
+		UserID:    "BobSpelledBackwards",
 	}
 
 	status, err := userStore.NewUser(testUser)
@@ -150,7 +151,7 @@ func TestUserStore(t *testing.T) {
 	cleanup(testDB)
 }
 
-func TestInterestStore (t *testing.T) {
+func TestInterestStore(t *testing.T) {
 	testDB, _, intStore, _ := initTestDB()
 
 	testInterest1 := &models.Interest{
@@ -162,7 +163,7 @@ func TestInterestStore (t *testing.T) {
 		Password:  "thisisapassword",
 		FirstName: "Bob",
 		LastName:  "Bob",
-		UserID: "1234",
+		UserID:    "1234",
 	}
 
 	interest, err := intStore.NewInterestFromString("Eating")
@@ -221,7 +222,7 @@ func TestInterestStore (t *testing.T) {
 	cleanup(testDB)
 }
 
-func TestClubStore (t *testing.T) {
+func TestClubStore(t *testing.T) {
 	testDB, _, _, clubStore := initTestDB()
 
 	testClub1 := &models.Club{
@@ -233,7 +234,7 @@ func TestClubStore (t *testing.T) {
 		Password:  "thisisapassword",
 		FirstName: "Bob",
 		LastName:  "Bob",
-		UserID: "1234",
+		UserID:    "1234",
 	}
 
 	club, err := clubStore.NewClubFromString("Eating")

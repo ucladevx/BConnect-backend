@@ -3,8 +3,8 @@ package postgres
 import (
 	"errors"
 
-	"github.com/ucladevx/BConnect-backend/models"
 	"github.com/jinzhu/gorm"
+	"github.com/ucladevx/BConnect-backend/models"
 )
 
 type InterestStorage struct {
@@ -81,4 +81,3 @@ func (intStore *InterestStorage) GetUsers(interest *models.Interest) ([]*models.
 
 	return users, nil
 }
-
