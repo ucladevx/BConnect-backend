@@ -37,13 +37,17 @@ func startServerAndServices(config Config) {
 	userService := users.NewUserService(userStore, friendStore, emailStore)
 
 	userController := controllers.NewUserController(userService, filters)
+	chatController := controllers.NewChatController()
 
 	r := mux.NewRouter()
 	CORSMWR := mux.CORSMethodMiddleware(r)
 	r.Use(CORSMWR)
 
+	go chatController.Rooms.Run()
+
 	http.Handle("/", r)
 	userController.Setup(r)
+	chatController.Setup(r)
 
 	s := r.PathPrefix("/auth").Subrouter()
 	CORSMWS := mux.CORSMethodMiddleware(s)

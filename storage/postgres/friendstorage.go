@@ -74,6 +74,6 @@ func (fs *FriendStorage) GetFriends(currUUID string) []models.Friends {
 }
 
 // Filter filters based on categories
-func (fs *FriendStorage) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User {
-	return finder(filters, args)
+func (fs *FriendStorage) Filter(finder models.Finder, currentUser *models.User, filters map[string]models.Filterer, args map[string][]string) []models.User {
+	return finder(filters, currentUser, args)
 }

@@ -30,7 +30,7 @@ type ChangeData struct {
 	GradYear    string   `json:"gradyear"`
 	CurrentJob  string   `json:"currentjob"`
 	Gender      string   `json:"gender"`
-	Email       string   `json:"username" gorm:"unique"`
+	Email       string   `json:"username"`
 	Major       string   `json:"major"`
 	Password    string   `json:"password"`
 	PhoneNumber string   `json:"phonenumber"`
@@ -66,14 +66,14 @@ func (cd *ChangeData) SplitIntoUserAndInterests() (*User, []string) {
 // User user struct
 type User struct {
 	gorm.Model
-	UserID      string  `json:"userid"`
-	FirstName   string  `json:"firstname"`
-	LastName    string  `json:"lastname"`
+	UserID      string  `json:"userid" gorm:"unique;not null"`
+	FirstName   string  `json:"firstname" gorm:"not null"`
+	LastName    string  `json:"lastname" gorm:"not null"`
 	Age         int     `json:"age"`
 	GradYear    string  `json:"gradyear"`
 	CurrentJob  string  `json:"currentjob"`
 	Gender      string  `json:"gender"`
-	Email       string  `json:"username" gorm:"unique"`
+	Email       string  `json:"username" gorm:"unique; not null"`
 	Major       string  `json:"major"`
 	Password    string  `json:"password"`
 	PhoneNumber string  `json:"phonenumber"`
@@ -119,16 +119,16 @@ type RefreshToken struct {
 	StandardClaims *jwt.StandardClaims
 }
 
-//ChatRooms user specific chat rooms
-type ChatRooms struct {
-	ChatRoomID string `json:"chatroomid"`
+//ChatRoom chat room
+type ChatRoom struct {
+	UserID     string `json:"userid"`
+	ChatRoomID string `json:"chatid"`
 }
 
 // Message message object
 type Message struct {
-	SenderID string `json:"senderid"`
-	Username string `json:"username"`
-	Message  string `json:"message"`
+	Message     []byte `json:"message"`
+	MessageRoom string
 }
 
 // Interests interests
@@ -138,10 +138,10 @@ type Interests struct {
 }
 
 // Filterer filters
-type Filterer func(*FilterReturn, []string) *FilterReturn
+type Filterer func(*FilterReturn, *User, []string) *FilterReturn
 
 // Finder finds
-type Finder func(map[string]Filterer, map[string][]string) []User
+type Finder func(map[string]Filterer, *User, map[string][]string) []User
 
 // Email is just an email
 type Email struct {

@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/ucladevx/BConnect-backend/errors"
 	"github.com/ucladevx/BConnect-backend/models"
 )
 
 //UserStorage user store
 type UserStorage interface {
-	GetUser(username string, password string) (*models.User, string)
+	GetUser(username string, password string) (*models.User, error)
 	NewUser(user *models.User) (bool, error)
 	ModifyUser(user *models.User, interests []models.Interests) *models.User
 	DeleteUser(username string, password string) (bool, error)
@@ -25,7 +26,7 @@ type FriendStorage interface {
 	AddFriend(currUUID string, friendUUID string, optionalMsg string) (*models.Friends, error)
 	AcceptFriend(currUUID string, friendUUID string) (*models.Friends, error)
 	GetFriends(currUUID string) []models.Friends
-	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User
+	Filter(finder models.Finder, currentUser *models.User, filters map[string]models.Filterer, args map[string][]string) []models.User
 }
 
 //EmailStorage email store
@@ -50,14 +51,14 @@ func NewUserService(userStore UserStorage, friendStore FriendStorage, emailStore
 }
 
 //Login login
-func (us *UserService) Login(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time) {
+func (us *UserService) Login(username string, password string) (map[string]interface{}, string, error) {
 	user, err := us.userStore.GetUser(username, password)
-	if err != "" {
+	if err != nil {
 
 	}
 	if user == nil {
 		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials"}
-		return resp, "", "", time.Time{}, time.Time{}
+		return resp, "", &errors.LoginError{}
 	}
 
 	expiresAt := time.Now().Add(time.Minute * 15)
@@ -103,7 +104,7 @@ func (us *UserService) Login(username string, password string) (map[string]inter
 	resp["refresh"] = refreshTokenString
 	resp["user"] = user
 
-	return resp, tokenString, refreshTokenString, expiresAt, refreshExpiresAt
+	return resp, tokenString, nil
 }
 
 func generateRandomString(s int) (string, error) {
@@ -142,6 +143,11 @@ func (us *UserService) Update(user *models.User, interestsList []string) (map[st
 //DeleteUser delete user
 func (us *UserService) DeleteUser(username string, password string) (bool, error) {
 	return us.userStore.DeleteUser(username, password)
+}
+
+//CurrentUser gets current user
+func (us *UserService) CurrentUser(uuid string) *models.User {
+	return us.userStore.GetFromID(uuid)
 }
 
 //Leave dummy function
@@ -196,8 +202,8 @@ func (us *UserService) GetFriends(currUUID string) []models.Friends {
 }
 
 //Filter filters
-func (us *UserService) Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User {
-	return us.friendStore.Filter(finder, filters, args)
+func (us *UserService) Filter(finder models.Finder, currentUser *models.User, filters map[string]models.Filterer, args map[string][]string) []models.User {
+	return us.friendStore.Filter(finder, currentUser, filters, args)
 }
 
 //AddEmail adds email to storage

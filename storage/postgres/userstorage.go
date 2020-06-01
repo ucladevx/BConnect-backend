@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 
+	"github.com/ucladevx/BConnect-backend/errors"
 	"github.com/ucladevx/BConnect-backend/models"
 	"github.com/ucladevx/BConnect-backend/utils/uuid"
 
@@ -28,24 +29,28 @@ func (us *UserStorage) create() {
 }
 
 // GetUser gets user for login
-func (us *UserStorage) GetUser(key string, password string) (*models.User, string) {
+func (us *UserStorage) GetUser(key string, password string) (*models.User, error) {
 	user, err := us.findUser(key, password)
 	return user, err
 }
 
-func (us *UserStorage) findUser(email, password string) (*models.User, string) {
+func (us *UserStorage) findUser(email, password string) (*models.User, error) {
 	user := &models.User{}
 
 	if err := us.client.Where("Email = ?", email).First(user).Error; err != nil {
-		return nil, ""
+		return nil, &errors.LoginError{
+			Issue: err,
+		}
 	}
 
 	errf := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword {
-		return nil, ""
+		return nil, &errors.LoginError{
+			Issue: errf,
+		}
 	}
 
-	return user, ""
+	return user, nil
 }
 
 // NewUser puts user into postgres

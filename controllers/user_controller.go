@@ -35,7 +35,7 @@ type InterestsForm struct {
 // UserService abstract user-side functionality in case we switch from whatever current db scheme we are using
 type UserService interface {
 	//first set of parentheses is the input, second set of parens is the outputs
-	Login(username string, password string) (map[string]interface{}, string, string, time.Time, time.Time)
+	Login(username string, password string) (map[string]interface{}, string, error)
 	Update(user *models.User, interestsString []string) (map[string]interface{}, error)
 	Signup(user *models.User) (bool, error)
 	DeleteUser(username string, password string) (bool, error)
@@ -44,19 +44,19 @@ type UserService interface {
 	AcceptFriendRequest(currUUID string, friendUUID string) (*models.Friends, error)
 	GetFriends(currUUID string) []models.Friends
 	Leave(currUUID string)
-	Filter(finder models.Finder, filters map[string]models.Filterer, args map[string][]string) []models.User
-
+	Filter(finder models.Finder, currentUser *models.User, filters map[string]models.Filterer, args map[string][]string) []models.User
+	CurrentUser(uuid string) *models.User
 	AddEmail(email string) (bool, error)
 }
 
 // Filterers abstracts filters
 type Filterers interface {
-	NameFilter(curr *models.FilterReturn, names []string) *models.FilterReturn
-	MajorFilter(curr *models.FilterReturn, majors []string) *models.FilterReturn
-	GradYearFilter(curr *models.FilterReturn, gradYear []string) *models.FilterReturn
-	InterestsFilter(curr *models.FilterReturn, interests []string) *models.FilterReturn
-	LocationRadiusFilter(curr *models.FilterReturn, radius []string) *models.FilterReturn
-	FinalFilter(filters map[string]models.Filterer, args map[string][]string) []models.User
+	NameFilter(curr *models.FilterReturn, currentUser *models.User, names []string) *models.FilterReturn
+	MajorFilter(curr *models.FilterReturn, currentUser *models.User, majors []string) *models.FilterReturn
+	GradYearFilter(curr *models.FilterReturn, currentUser *models.User, gradYear []string) *models.FilterReturn
+	InterestsFilter(curr *models.FilterReturn, currentUser *models.User, interests []string) *models.FilterReturn
+	LocationRadiusFilter(curr *models.FilterReturn, currentUser *models.User, radius []string) *models.FilterReturn
+	FinalFilter(filters map[string]models.Filterer, currentUser *models.User, args map[string][]string) []models.User
 }
 
 // UserController abstract server-side authentication
@@ -96,7 +96,10 @@ func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	var userInfo models.User
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&userInfo)
-	resp, token, _, _, _ := uc.UserService.Login(userInfo.Email, userInfo.Password)
+	resp, token, err := uc.UserService.Login(userInfo.Email, userInfo.Password)
+	if err != nil {
+
+	}
 	if token != "" {
 		json.NewEncoder(w).Encode(resp)
 	}
@@ -117,7 +120,10 @@ func (uc *UserController) Signup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error signing up", 500)
 		return
 	}
-	resp, token, _, _, _ := uc.UserService.Login(userInfo.Email, userInfo.Password)
+	resp, token, err := uc.UserService.Login(userInfo.Email, userInfo.Password)
+	if err != nil {
+
+	}
 	if token != "" {
 		json.NewEncoder(w).Encode(resp)
 	}
@@ -202,6 +208,9 @@ func (uc *UserController) Refresh(w http.ResponseWriter, r *http.Request) {
 
 //Filter filters
 func (uc *UserController) Filter(w http.ResponseWriter, r *http.Request) {
+	claim := uc.getCurrentUserFromTokenProvided(w, r)
+	currentUser := uc.UserService.CurrentUser(claim.UUID)
+
 	params := mux.Vars(r)
 	filterOne := params["filterOne"]
 	if filterOne == "" {
@@ -222,7 +231,7 @@ func (uc *UserController) Filter(w http.ResponseWriter, r *http.Request) {
 		"radius":    strings.Split(r.URL.Query().Get("radius"), ","),
 	}
 
-	users := uc.UserService.Filter(uc.Filters.FinalFilter, funcMapper, categories)
+	users := uc.UserService.Filter(uc.Filters.FinalFilter, currentUser, funcMapper, categories)
 	var resp = map[string]interface{}{"users": users}
 	json.NewEncoder(w).Encode(resp)
 }
