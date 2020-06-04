@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/ucladevx/BConnect-backend/errors"
 	"github.com/ucladevx/BConnect-backend/models"
+	"github.com/ucladevx/BConnect-backend/utils/uuid"
 )
 
 /*
@@ -91,6 +92,7 @@ func (s Subscription) SocketReader(broadcast chan models.Message, unregister cha
 		msg := models.Message{
 			Message:     buf,
 			MessageRoom: s.RoomID,
+			MessageID:   uuid.UUID(),
 		}
 		broadcast <- msg
 	}

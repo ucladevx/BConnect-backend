@@ -3,11 +3,15 @@ EXEC=BConnect-backend
 
 .PHONY: test
 
-run: bin/bconnect test
+run: clean bin/bconnect test
 	./bin/$(EXEC)
 
-bin/bconnect:
+bin/bconnect: clean
 	go build -o bin/$(EXEC) *.go
+
+setup:
+	./scripts/removal.sh
+	./scripts/init.sh
 
 clean:
 	rm -rf bin/BConnect-backend

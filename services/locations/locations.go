@@ -36,6 +36,7 @@ func (locationTree *UserLocations) DeleteLocation() *UserLocations {
 	return locationTree
 }
 
+//GetNNearestNeighbors Get nearest neighbors
 func (locationTree *UserLocations) GetNNearestNeighbors() {
 
 }

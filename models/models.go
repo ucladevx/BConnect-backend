@@ -129,6 +129,7 @@ type ChatRoom struct {
 type Message struct {
 	Message     []byte `json:"message"`
 	MessageRoom string
+	MessageID   string
 }
 
 // Interests interests
